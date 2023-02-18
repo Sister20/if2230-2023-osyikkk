@@ -5,8 +5,9 @@ CC            = gcc
 
 # Directory
 SOURCE_FOLDER = src
+# SOURCE_FOLDER = bin/iso/boot/grub
 OUTPUT_FOLDER = bin
-ISO_NAME      = os2023
+ISO_NAME      = OSyikkk
 
 # Flags
 WARNING_CFLAG = -Wall -Wextra -Werror
@@ -18,7 +19,7 @@ LFLAGS        = -T $(SOURCE_FOLDER)/linker.ld -melf_i386
 
 
 run: all
-	@qemu-system-i386 -s -S -cdrom $(OUTPUT_FOLDER)/$(ISO_NAME).iso
+	@qemu-system-i386 -s -cdrom $(OUTPUT_FOLDER)/$(ISO_NAME).iso
 all: build
 build: iso
 clean:
@@ -29,14 +30,29 @@ clean:
 kernel:
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/kernel_loader.s -o $(OUTPUT_FOLDER)/kernel_loader.o
 # TODO: Compile C file with CFLAGS
+	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/kernel.c -o $(OUTPUT_FOLDER)/kernel.o
+	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/framebuffer.c -o $(OUTPUT_FOLDER)/framebuffer.o
+	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/stdmem.c -o $(OUTPUT_FOLDER)/stdmem.o
+	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/portio.c -o $(OUTPUT_FOLDER)/portio.o
 	@$(LIN) $(LFLAGS) bin/*.o -o $(OUTPUT_FOLDER)/kernel
 	@echo Linking object files and generate elf32...
 	@rm -f *.o
 
 iso: kernel
+	@rm -r $(OUTPUT_FOLDER)/iso/
 	@mkdir -p $(OUTPUT_FOLDER)/iso/boot/grub
 	@cp $(OUTPUT_FOLDER)/kernel     $(OUTPUT_FOLDER)/iso/boot/
 	@cp other/grub1                 $(OUTPUT_FOLDER)/iso/boot/grub/
 	@cp $(SOURCE_FOLDER)/menu.lst   $(OUTPUT_FOLDER)/iso/boot/grub/
 # TODO: Create ISO image
-	@rm -r $(OUTPUT_FOLDER)/iso/
+	@genisoimage -R            \
+	-b boot/grub/grub1         \
+	-no-emul-boot              \
+	-boot-load-size 4          \
+	-A $(ISO_NAME)             \
+	-input-charset utf8        \
+	-quiet                     \
+	-boot-info-table           \
+	-o $(OUTPUT_FOLDER)/$(ISO_NAME).iso              \
+	$(OUTPUT_FOLDER)/iso
+	
