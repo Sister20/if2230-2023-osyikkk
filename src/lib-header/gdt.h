@@ -18,7 +18,7 @@ extern struct GDTR _gdt_gdtr;
  * @param type_bit     4-bit contain type flags
  * @param non_system   1-bit contain system
  */
-typedef struct SegmentDescriptor {
+struct SegmentDescriptor {
     // First 32-bit
     uint16_t segment_low;
     uint16_t base_low;
@@ -26,8 +26,8 @@ typedef struct SegmentDescriptor {
     // Next 16-bit (Bit 32 to 47)
     uint8_t             base_mid;
     uint8_t type_bit   : 4;
-    uint8_t descriptor_type : 1;
     // TODO : Continue GDT definition
+    uint8_t descriptor_type : 1;
     uint8_t dpl : 2;
     uint8_t segment_present : 1;
     uint8_t segment_limit : 4;
@@ -37,7 +37,7 @@ typedef struct SegmentDescriptor {
     uint8_t granularity : 1;
     uint8_t base_high : 8;
 
-} __attribute__((packed)) gdt_entry;
+} __attribute__((packed));
 
 /**
  * Global Descriptor Table containing list of segment descriptor. One GDT already defined in memory.c.

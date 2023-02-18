@@ -10,12 +10,72 @@ struct GlobalDescriptorTable global_descriptor_table = {
     .table = {
         {
             // TODO : Implement
+
+
+            // First 32-bit
+            .segment_low = 0x0000,
+            .base_low = 0x0000,
+
+            // Next 16-bit (Bit 32 to 47)
+            .base_mid = 0x00,
+            .type_bit = 0x0,
+            
+            // TODO : Continue GDT definition
+            .descriptor_type = 0x0,
+            .dpl = 0x0,
+            .segment_present = 0x0,
+            .segment_limit = 0x0,
+            .avl = 0x0,
+            .code_seg_64bit = 0x0,
+            .def_op_size = 0x0,
+            .granularity = 0x0,
+            .base_high = 0x0
         },
         {
             // TODO : Implement
+            // Kernel Code Segment
+
+            // First 32-bit
+            .segment_low = 0xFFFF,
+            .base_low = 0x0000,
+
+            // Next 16-bit (Bit 32 to 47)
+            .base_mid = 0x00,
+            .type_bit = 0xA,
+            
+            // TODO : Continue GDT definition
+            .descriptor_type = 0x1,
+            .dpl = 0x0,
+            .segment_present = 0x1,
+            .segment_limit = 0xF,
+            .avl = 0x0,
+            .code_seg_64bit = 0x1,
+            .def_op_size = 0x1,
+            .granularity = 0x1,
+            .base_high = 0x00
         },
         {
             // TODO : Implement
+            // Kernel Data Segment
+
+            // First 32-bit
+            .segment_low = 0xFFFF,
+            .base_low = 0x0000,
+
+            // Next 16-bit (Bit 32 to 47)
+            .base_mid = 0x00,
+            .type_bit = 0x2,
+
+            // TODO : Continue GDT definition
+            .descriptor_type = 0x1,
+            .dpl = 0x0,
+            .segment_present = 0x1,
+            .segment_limit = 0xF,
+            .avl = 0x0,
+            .code_seg_64bit = 0x0,
+            .def_op_size = 0x1,
+            .granularity = 0x1,
+            .base_high = 0x00
         }
     }
 };
@@ -28,5 +88,8 @@ struct GlobalDescriptorTable global_descriptor_table = {
 struct GDTR _gdt_gdtr = {
     // TODO : Implement, this GDTR will point to global_descriptor_table. 
     //        Use sizeof operator
+    .size = sizeof(global_descriptor_table) - 1,
+    
+    .address = &global_descriptor_table
 };
 
