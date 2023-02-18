@@ -19,9 +19,9 @@ struct GlobalDescriptorTable global_descriptor_table = {
             // Next 16-bit (Bit 32 to 47)
             .base_mid = 0x00,
             .type_bit = 0x0,
+            .non_system = 0x0,
             
             // TODO : Continue GDT definition
-            .descriptor_type = 0x0,
             .dpl = 0x0,
             .segment_present = 0x0,
             .segment_limit = 0x0,
@@ -42,9 +42,9 @@ struct GlobalDescriptorTable global_descriptor_table = {
             // Next 16-bit (Bit 32 to 47)
             .base_mid = 0x00,
             .type_bit = 0xA,
+            .non_system = 0x1,
             
             // TODO : Continue GDT definition
-            .descriptor_type = 0x1,
             .dpl = 0x0,
             .segment_present = 0x1,
             .segment_limit = 0xF,
@@ -65,9 +65,9 @@ struct GlobalDescriptorTable global_descriptor_table = {
             // Next 16-bit (Bit 32 to 47)
             .base_mid = 0x00,
             .type_bit = 0x2,
+            .non_system = 0x1,
 
             // TODO : Continue GDT definition
-            .descriptor_type = 0x1,
             .dpl = 0x0,
             .segment_present = 0x1,
             .segment_limit = 0xF,
