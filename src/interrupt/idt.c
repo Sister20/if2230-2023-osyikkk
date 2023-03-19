@@ -1,6 +1,6 @@
 #include "../lib-header/idt.h"
 
-void *isr_stub_table[ISR_STUB_TABLE_LIMIT];
+// void *isr_stub_table[ISR_STUB_TABLE_LIMIT];
 struct IDTR _idt_idtr;
 
 // global initialization of IDT

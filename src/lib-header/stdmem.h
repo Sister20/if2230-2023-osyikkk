@@ -3,6 +3,8 @@
 
 #include "lib-header/stdtype.h"
 
+#define VIDEO_ADDR 0xB8000
+
 /**
  * C standard memset, check man memset or
  * https://man7.org/linux/man-pages/man3/memset.3.html for more details

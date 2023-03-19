@@ -3,20 +3,47 @@
 #include "lib-header/stdmem.h"
 #include "lib-header/portio.h"
 
+
 void framebuffer_set_cursor(uint8_t r, uint8_t c) {
     // TODO : Implement
-    out(CURSOR_PORT_CMD, 0x0A);
-	out(CURSOR_PORT_DATA, (in(CURSOR_PORT_DATA) & 0xC0) | r);
- 
-	out(CURSOR_PORT_CMD, 0x0B);
-	out(CURSOR_PORT_DATA, (in(CURSOR_PORT_DATA) & 0xE0) | c);
+    uint16_t pos = r * MAX_COLS + c;
+    // out(0x3D4, 0x0F);
+    // out(0x3D5, (uint8_t)(pos & 0xFF));
+    // out(0x3D4, 0x0E);
+    // out(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+    
+    out(CURSOR_PORT_CMD, VGA_CURSOR_HIGH);
+    out(CURSOR_PORT_DATA, (uint8_t)((pos >> 8) & 0xFF));
+    out(CURSOR_PORT_CMD, VGA_CURSOR_LOW);
+    out(CURSOR_PORT_DATA, (uint8_t)(pos & 0xFF));
+}
+
+struct Cursor framebuffer_get_cursor() {
+    out(CURSOR_PORT_CMD, VGA_CURSOR_HIGH);
+    int offset = in(CURSOR_PORT_DATA) << 8;
+    out(CURSOR_PORT_CMD, VGA_CURSOR_LOW);
+    offset += in(CURSOR_PORT_DATA);
+    struct Cursor c = 
+    {
+        .row = offset / MAX_COLS, 
+        .col = offset % MAX_COLS
+    };
+    return c;
+};
+
+int framebuffer_get_col(struct Cursor c) {
+    return c.col;
+}
+
+int framebuffer_get_row(struct Cursor c) {
+    return c.row;
 }
 
 void framebuffer_write(uint8_t row, uint8_t col, char c, uint8_t fg, uint8_t bg) {
     // TODO : Implement
-    uint16_t attrib = (bg << 4) | (fg & 0x0F);
+    uint16_t attrib = (bg << 4) | (fg & WHITE);
     volatile uint16_t * where;
-    where = (volatile uint16_t *)MEMORY_FRAMEBUFFER + (row * 80 + col) ;
+    where = (volatile uint16_t *)MEMORY_FRAMEBUFFER + (row * MAX_COLS + col) ;
     *where = c | (attrib << 8); 
 }
 
@@ -26,8 +53,52 @@ void framebuffer_clear(void) {
     uint16_t i;
     volatile uint16_t * where;
     where = (volatile uint16_t *)MEMORY_FRAMEBUFFER;
-    for (i = 0; i < 80 * 25; i++) {
+    for (i = 0; i < MAX_COLS * MAX_ROWS; i++) {
         *where = space;
         where++;
     }   
+}
+
+void framebuffer_write_string(char * str) {
+    struct Cursor c = framebuffer_get_cursor();
+    int offset = c.row * MAX_COLS + c.col;
+    int i = 0;
+    while (str[i] != '\0') {
+        if (offset >= MAX_COLS * MAX_ROWS) {
+            offset = framebuffer_scroll_ln(offset);
+        }
+        if (str[i] == '\n') {
+            // offset = (offset / 160 + 1) * 160;
+            offset = (offset / MAX_COLS + 1) * MAX_COLS;
+        } else {
+            // framebuffer_write(offset / 160, offset % 160, str[i], WHITE, BLACK);
+            framebuffer_write(offset / MAX_COLS, offset % MAX_COLS, str[i], WHITE, BLACK);
+            offset += 1;
+        }
+        i++;
+    }
+    framebuffer_set_cursor(offset / MAX_COLS, offset % MAX_COLS);
+}
+
+int framebuffer_scroll_ln(int offset) {
+    // di enter dulu baru scroll
+    memcpy(
+        (void *)MEMORY_FRAMEBUFFER, 
+        (void *)(MEMORY_FRAMEBUFFER + MAX_COLS * 2),
+        // (void *)(MEMORY_FRAMEBUFFER + MAX_COLS * 2),
+        //  160 * 2 * 24);
+        // 2 * MAX_COLS * 2 * (MAX_ROWS - 1));
+        MAX_COLS * 2 * (MAX_ROWS + 1));
+
+    for (int i = 0; i < MAX_COLS; i++) {
+        framebuffer_write(MAX_ROWS - 1, i, ' ', WHITE, BLACK);
+        framebuffer_write(MAX_ROWS - 2, i, ' ', WHITE, BLACK);
+        // framebuffer_write(MAX_ROWS - 3, i, ' ', WHITE, BLACK);
+    }
+
+
+    // return (c.row * MAX_COLS + c.col) - (MAX_ROWS - 1) * MAX_COLS;
+    // return (c.row * MAX_COLS + c.col) - 2 * MAX_COLS;
+    return (offset) - 3 * (MAX_COLS);
+    // return offset - (MAX_ROWS - 1) * MAX_COLS;
 }

@@ -1,8 +1,9 @@
 #ifndef _USER_ISR_H
 #define _USER_ISR_H
 
-#include "interrupt.h"
 #include "stdtype.h"
+#include "interrupt.h"
+#include "portio.h"
 
 #define EXT_SCANCODE_UP        0x48
 #define EXT_SCANCODE_DOWN      0x50
@@ -33,6 +34,10 @@ extern const char keyboard_scancode_1_to_ascii_map[256];
 struct KeyboardDriverState {
     bool    read_extended_mode;
     bool    keyboard_input_on;
+    bool    shift_pressed;
+    bool    ctrl_pressed;
+    bool    alt_pressed;
+    bool    caps_cond;
     uint8_t buffer_index;
     char    keyboard_buffer[KEYBOARD_BUFFER_SIZE];
 } __attribute((packed));
@@ -70,5 +75,36 @@ bool is_keyboard_blocking(void);
  * after calling `keyboard_state_activate();`
  */
 void keyboard_isr(void);
+
+/**
+ * @brief Clear screen
+ * 
+ * 
+ */
+void clear_screen();
+
+/**
+ * @brief Print string to screen
+ * 
+ * @param char* s
+ * @param int n 
+ */
+void append(char s[], char n);
+
+/**
+ * @brief Compare two string
+ * 
+ * @param s1 
+ * @param s2 
+ * @return int 
+ */
+int strcmp(char s1[], char s2[]);
+
+/**
+ * @brief Execute command from input
+ * 
+ * @param char* input 
+ */
+void execute_cmd(char *input);
 
 #endif

@@ -18,25 +18,25 @@ Tugas IF2230 - Sistem Operasi 2023 Tahun 2022/2023
 
 
 ## General Information
-G
+Operating System
 
 
 ## Technologies Used
-- 
+- Qemu
+- NASM
+- C
 
 <!-- ## Penjelasan Singkat Algoritma
 *  -->
-
-
 ## Features
-- Implementasi dari
+- Implementasi dari mata kuliah Sistem Operasi 
 
 ## Screenshots
 ![Example screenshot](./doc/OS.png)
 
 
 ## How to Run
-- 
+- make run di terminal
 
 ## Project Status
 Project is: _not complete_ 
@@ -45,11 +45,12 @@ Project is: _not complete_
 ## Room for Improvement
 
 Room for improvement:
-- speed
+- speed up the code
+- add more features
 
 
 ## Division of tasks
-1. Nigel Sahl (13521043)                : 
-2. Razzan Daksana Yoni (13521087)       : 
-3. Rava Maulana Azzikri (13521149)      : 
-4. Hanif Muhammad Zhafran (13521157)    : 
+1. Nigel Sahl (13521043)                
+2. Razzan Daksana Yoni (13521087)        
+3. Rava Maulana Azzikri (13521149)       
+4. Hanif Muhammad Zhafran (13521157)     
