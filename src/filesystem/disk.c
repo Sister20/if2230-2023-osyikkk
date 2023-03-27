@@ -23,8 +23,8 @@ void read_blocks(void *ptr, uint32_t logical_block_address, uint8_t block_count)
     for (uint32_t i = 0; i < block_count; i++) {
         ATA_busy_wait();
         ATA_DRQ_wait();
-        for (uint32_t j = 0; j < HALF_BLOCK_SIZE; j++)
-            target[j] = in(0x1F0);
+        for (uint32_t j = 0; j < HALF_BLOCK_SIZE; j ++)
+            target[j] = in16(0x1F0);
         // Note : uint16_t => 2 bytes, HALF_BLOCK_SIZE*2 = BLOCK_SIZE with pointer arithmetic
         target += HALF_BLOCK_SIZE;
     }
@@ -46,7 +46,7 @@ void write_blocks(const void *ptr, uint32_t logical_block_address, uint8_t block
            HALF_BLOCK_SIZE*i = block_offset with pointer arithmetic
         */
         for (uint32_t j = 0; j < HALF_BLOCK_SIZE; j++)
-            out(0x1F0, ((uint16_t*) ptr)[HALF_BLOCK_SIZE*i + j]);
+            out16(0x1F0, ((uint16_t*) ptr)[HALF_BLOCK_SIZE*i + j]);
     }
 }
 

@@ -1,3 +1,13 @@
 {
     "debug.onTaskErrors": "debugAnyway",
+    "files.associations": {
+        "keyboard.h": "c",
+        "interrupt.h": "c",
+        "disk.h": "c",
+        "stdmem.h": "c",
+        "fat32.h": "c",
+        "portio.h": "c",
+        "gdt.h": "c",
+        "kernel.h": "c",
+    },
 }
