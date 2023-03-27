@@ -19,7 +19,7 @@
         {
             "type": "shell",
             "label": "Launch QEMU",
-            "command": "make run",
+            "command": "make debug",
             "isBackground": true,
             "dependsOn": "Build OS",
             "options": {

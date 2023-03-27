@@ -6,6 +6,9 @@
 #include "lib-header/kernel_loader.h"
 #include "lib-header/idt.h"
 #include "lib-header/interrupt.h"
+#include "lib-header/keyboard.h"
+#include "lib-header/disk.h"
+#include "lib-header/fat32.h"
 
 void kernel_setup(void) {
     // uint32_t a;
