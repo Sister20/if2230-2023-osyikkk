@@ -22,7 +22,7 @@ const uint8_t fs_signature[BLOCK_SIZE] = {
  */
 uint32_t cluster_to_lba(uint32_t cluster){
     // dr nanobyte -> lba = data_region_begin + (cluster-2)*sector_per_cluster
-    return (cluster-2) * cluster_size; //  ?
+    // return (cluster-2) * cluster_size; //  ?
 }
 
 /**
@@ -98,8 +98,10 @@ void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count){
 
 /* -- CRUD Operation -- */
 
-/**
- *  FAT32 Folder / Directory read
+/*
+ * @brief 
+ * 
+ *
  *
  * @param request buf point to struct FAT32DirectoryTable,
  *                name is directory name,
@@ -108,6 +110,7 @@ void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count){
  *                buffer_size must be exactly sizeof(struct FAT32DirectoryTable)
  * @return Error code: 0 success - 1 not a folder - 2 not found - -1 unknown
  */
+
 int8_t read_directory(struct FAT32DriverRequest request){
     
 }
