@@ -26,7 +26,7 @@
 
 // EOF also double as valid cluster / "this is last valid cluster in the chain"
 #define FAT32_FAT_END_OF_FILE 0x0FFFFFFF
-#define FAT32_FAT_EMPTY_ENTRY 0x00000000
+#define FAT32_FAT_EMPTY_ENTRY 0x00000000        
 
 #define FAT_CLUSTER_NUMBER    1
 #define ROOT_CLUSTER_NUMBER   2

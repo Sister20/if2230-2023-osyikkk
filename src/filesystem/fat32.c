@@ -22,8 +22,8 @@ const uint8_t fs_signature[BLOCK_SIZE] = {
  */
 uint32_t cluster_to_lba(uint32_t cluster){
     // dr nanobyte -> lba = data_region_begin + (cluster-2)*sector_per_cluster
-    // return (cluster-2) * cluster_size; //  ?
-}
+    return cluster * CLUSTER_BLOCK_COUNT;
+}   
 
 /**
  * Initialize DirectoryTable value with parent DirectoryEntry and directory name
@@ -33,7 +33,25 @@ uint32_t cluster_to_lba(uint32_t cluster){
  * @param parent_dir_cluster Parent directory cluster number
  */
 void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uint32_t parent_dir_cluster){
+    struct FAT32DirectoryEntry *new_entry = &(dir_table->table[0]);
+    memcpy(&(new_entry->name), name, 8);
+    new_entry->attribute = ATTR_SUBDIRECTORY;
+    new_entry->user_attribute = UATTR_NOT_EMPTY;
 
+    new_entry->undelete = 0;
+    new_entry->create_time = 0;
+    new_entry->create_date = 0;
+    new_entry->access_date = 0;
+
+    new_entry->cluster_high = (uint16_t)(parent_dir_cluster >> 16);
+
+    new_entry->modified_time = 0;
+    new_entry->modified_date = 0;
+
+    new_entry->cluster_low = (uint16_t)(parent_dir_cluster & 0xFFFF);
+    new_entry->filesize = 0;
+    
+    dir_table->table[0];
 }
 
 /**
@@ -42,7 +60,8 @@ void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uin
  * @return True if memcmp(boot_sector, fs_signature) returning inequality
  */
 bool is_empty_storage(void){
-       
+    // read boot sector 
+    return memsmp(BOOT_SECTOR, fs_signature, BLOCK_SIZE) != 0;
 }
 
 /**
@@ -51,11 +70,19 @@ bool is_empty_storage(void){
  * and initialized root directory) into cluster number 1
  */
 void create_fat32(void){
-    
+    // write fs_signature into boot sector
+    // write_blocks(fs_signature, BOOT_SECTOR,  1);
+    // write FAT into cluster number 1
+    // write_blocks();
+    // write root directory into cluster number 2    
 }
 
 /**
- * Initialize file system driver state, if is_empty_storage() then create_fat32()
+ * @brief 
+ * 
+ *
+ * 
+ *
  * Else, read and cache entire FileAllocationTable (located at cluster number 1) into driver state
  */
 void initialize_filesystem_fat32(void){
@@ -63,8 +90,9 @@ void initialize_filesystem_fat32(void){
         create_fat32();
     } else {
         // read cluster 1
-        // cache FAT
-
+        read_clusters(BOOT_SECTOR, fs_signature, 1);
+        // read FAT
+        // read root directory
     }
 }
 
@@ -123,7 +151,23 @@ int8_t read_directory(struct FAT32DriverRequest request){
  * @return Error code: 0 success - 1 not a file - 2 not enough buffer - 3 not found - -1 unknown
  */
 int8_t read(struct FAT32DriverRequest request){
-    
+    // for (uint32_t i = 0; i < request.buffer_size; i++){
+    //     if (memcmp(request.name, request.buf[i].name, 8) == 0){
+    //         // found
+    //         if (request.buf[i].attributes & FAT32_ATTR_DIRECTORY){
+    //             // not a file
+    //             return 1;
+    //         } else {
+    //             // read file
+    //             read_clusters(request.buf, request.buf[i].first_cluster, request.buffer_size);
+    //             return 0;
+    //         }
+    //     }
+    //     else {
+    //         // not found
+    //         return 3;
+    //     }
+    // }
 }
 
 /**
@@ -144,5 +188,5 @@ int8_t write(struct FAT32DriverRequest request){
  * @return Error code: 0 success - 1 not found - 2 folder is not empty - -1 unknown
  */
 int8_t delete(struct FAT32DriverRequest request){
-    
+
 }
