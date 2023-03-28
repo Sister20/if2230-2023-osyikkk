@@ -25,6 +25,10 @@ void kernel_setup(void) {
     framebuffer_set_cursor(0, 0);
     framebuffer_write_string("> ");
     initialize_filesystem_fat32();
+    struct FAT32DriverRequest request;
+    memcpy(request.name, "ROO\0\0\0\0\0", 8);
+    request.parent_cluster_number = ROOT_CLUSTER_NUMBER;
+    read_directory(request);
     // while (TRUE) b += 1;
     __asm__("int $0x4");
     while (TRUE) {
