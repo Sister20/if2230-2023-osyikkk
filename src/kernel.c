@@ -24,6 +24,7 @@ void kernel_setup(void) {
     // framebuffer_write(3, 11, '!', 0, 0xF);
     framebuffer_set_cursor(0, 0);
     framebuffer_write_string("> ");
+    initialize_filesystem_fat32();
     // while (TRUE) b += 1;
     __asm__("int $0x4");
     while (TRUE) {
