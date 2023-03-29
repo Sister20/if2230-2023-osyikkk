@@ -34,9 +34,16 @@ Operating System
 ## Screenshots
 ![Example screenshot](./doc/OS.png)
 
+## Installation
+Clone the repo
+```sh
+git clone https://github.com/Sister20/if2230-2023-osyikkk.git
+```
 
-## How to Run
-- make run di terminal
+## Usage
+```sh
+make run
+```
 
 ## Project Status
 Project is: _not complete_ 
