@@ -4,6 +4,8 @@
 #include "../lib-header/portio.h"
 #include "../lib-header/stdmem.h"
 
+// TODO : Add Feature 
+
 #define SC_MAX 57
 const char keyboard_scancode_1_to_ascii_map[256] = {
     0,   0x1B, '1',  '2', '3',  '4', '5', '6', '7', '8', '9', '0', '-',
@@ -203,10 +205,19 @@ void execute_cmd(char *input) {
     framebuffer_set_cursor(0, 0);
     framebuffer_write_string("> ");
   } else {
-    framebuffer_write_string("\nCommand not found: ");
-    framebuffer_write_string(input);
+    if (strcmp(input, "help") == 0) {
+      framebuffer_write_string("\nAvaible commands:\n");
+      framebuffer_write_string("clear - Clear the screen\n");
+      framebuffer_write_string("help - List of available commands\n");
+    } else if (strcmp(&input[3], "del") == 0) {
+      framebuffer_write_string("\nCommand not found: ");
+      framebuffer_write_string(input);
+    } else {
+      framebuffer_write_string("\nCommand not found: ");
+      framebuffer_write_string(input);
+    }
     struct Cursor c = framebuffer_get_cursor();
     framebuffer_set_cursor(c.row + 1, 0);
     framebuffer_write_string("> ");
-  }
+  } 
 }

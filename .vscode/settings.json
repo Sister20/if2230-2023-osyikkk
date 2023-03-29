@@ -3,6 +3,8 @@
     "files.associations": {
         "stdmem.h": "c",
         "fat32.h": "c",
-        "stdtype.h": "c"
+        "stdtype.h": "c",
+        "portio.h": "c",
+        "cmos.h": "c"
     },
 }

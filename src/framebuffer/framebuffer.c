@@ -1,7 +1,7 @@
-#include "lib-header/framebuffer.h"
-#include "lib-header/stdtype.h"
-#include "lib-header/stdmem.h"
-#include "lib-header/portio.h"
+#include "../lib-header/framebuffer.h"
+#include "../lib-header/stdtype.h"
+#include "../lib-header/stdmem.h"
+#include "../lib-header/portio.h"
 
 
 void framebuffer_set_cursor(uint8_t r, uint8_t c) {
@@ -40,7 +40,6 @@ int framebuffer_get_row(struct Cursor c) {
 }
 
 void framebuffer_write(uint8_t row, uint8_t col, char c, uint8_t fg, uint8_t bg) {
-    // TODO : Implement
     uint16_t attrib = (bg << 4) | (fg & WHITE);
     volatile uint16_t * where;
     where = (volatile uint16_t *)MEMORY_FRAMEBUFFER + (row * MAX_COLS + col) ;
@@ -48,8 +47,7 @@ void framebuffer_write(uint8_t row, uint8_t col, char c, uint8_t fg, uint8_t bg)
 }
 
 void framebuffer_clear(void) {
-    // TODO : Implement
-    uint16_t space = 0x20 | (0x07 << 8); // " " in ASCII with white text on black background 
+    uint16_t space = 0x20 | (0x07 << 8);
     uint16_t i;
     volatile uint16_t * where;
     where = (volatile uint16_t *)MEMORY_FRAMEBUFFER;
@@ -63,9 +61,11 @@ void framebuffer_write_string(char * str) {
     struct Cursor c = framebuffer_get_cursor();
     int offset = c.row * MAX_COLS + c.col;
     int i = 0;
+    bool cursor_bottom_row = 0;
     while (str[i] != '\0') {
         if (offset >= MAX_COLS * MAX_ROWS) {
             offset = framebuffer_scroll_ln(offset);
+            cursor_bottom_row = 1;
         }
         if (str[i] == '\n') {
             // offset = (offset / 160 + 1) * 160;
@@ -77,9 +77,14 @@ void framebuffer_write_string(char * str) {
         }
         i++;
     }
-    framebuffer_set_cursor(offset / MAX_COLS, offset % MAX_COLS);
+    if (cursor_bottom_row) {
+        framebuffer_set_cursor(MAX_ROWS - 1, 1);
+    } else {
+        framebuffer_set_cursor(offset / MAX_COLS, offset % MAX_COLS);
+    }
 }
 
+// TODO: scrolling mechanism still not finished
 int framebuffer_scroll_ln(int offset) {
     // di enter dulu baru scroll
     memcpy(
