@@ -246,4 +246,14 @@ int8_t write(struct FAT32DriverRequest request);
  */
 int8_t delete(struct FAT32DriverRequest request);
 
+/**
+ * FAT32 find empty cluster in file allocation table.
+ * @brief Find empty cluster in file allocation table.
+ * 
+ * @param size size of empty_fat_clusters
+ * 
+ * @return struct EmptyCluster
+*/
+struct EmptyCluster find_empty_cluster(uint32_t size);
+
 #endif
