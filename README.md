@@ -34,9 +34,16 @@ Operating System
 ## Screenshots
 ![Example screenshot](./doc/OS.png)
 
+## Installation
+Clone the repo
+```sh
+git clone https://github.com/Sister20/if2230-2023-osyikkk.git
+```
 
-## How to Run
-- make run di terminal
+## Usage
+```sh
+make run
+```
 
 ## Project Status
 Project is: _not complete_ 
@@ -50,7 +57,7 @@ Room for improvement:
 
 
 ## Division of tasks
-1. Nigel Sahl (13521043)                
-2. Razzan Daksana Yoni (13521087)        
-3. Rava Maulana Azzikri (13521149)       
-4. Hanif Muhammad Zhafran (13521157)     
+[13521043 Nigel Sahl](https://github.com/NerbFox)    
+[13521087 Razzan Daksana Yoni](https://github.com/razzanYoni)        
+[13521149 Rava Maulana Azzikri](https://github.com/RMA1403)       
+[13521157 Hanif Muhammad Zhafran](https://github.com/hanifmz07)
