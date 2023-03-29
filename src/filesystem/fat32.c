@@ -144,8 +144,17 @@ void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count){
  * @return Error code: 0 success - 1 not a folder - 2 not found - -1 unknown
  */
 int8_t read_directory(struct FAT32DriverRequest request){
-    int8_t error_code = -1;
-    bool not_found = 0;
+    int8_t error_code = 2;
+
+    if (memcmp(request.name, "\0\0\0\0\0\0\0\0", 8) == 0) {
+        // Folder name empty
+        return error_code = -1;
+    }
+
+    if (request.buffer_size != 0) {
+        // Requested data is not a folder
+        return error_code = 1;
+    }
 
     struct FAT32DirectoryTable parent_table;
     read_clusters(&parent_table, request.parent_cluster_number, 1);
@@ -154,21 +163,12 @@ int8_t read_directory(struct FAT32DriverRequest request){
         if(memcmp(request.name, parent_table.table[i].name, 8) == 0) {
             if (parent_table.table[i].attribute == ATTR_SUBDIRECTORY) {
                 // terbaca sebagai folder
-                error_code = 0;
                 uint32_t curr_cluster = parent_table.table[i].cluster_high << 16 | parent_table.table[i].cluster_low;
 
                 struct FAT32DirectoryTable curr_dir;
                 read_clusters(&curr_dir, curr_cluster, 1);
                 memcpy(request.buf, &curr_dir, sizeof(struct FAT32DirectoryTable));
-                break;
-            } else {
-                // Not a folder
-                error_code = 1;
-                not_found = 1;
-            }
-        } else {
-            if (!not_found){
-                error_code = 2;
+                return error_code = 0;
             }
         }
     }
@@ -183,11 +183,16 @@ int8_t read_directory(struct FAT32DriverRequest request){
  * @return Error code: 0 success - 1 not a file - 2 not enough buffer - 3 not found - -1 unknown
  */ 
 int8_t read(struct FAT32DriverRequest request){
-    uint8_t error_code = -1;
+    uint8_t error_code = 3;
 
     if(memcmp(request.name, "\0\0\0\0\0\0\0\0", 8) == 0) {
         // Empty request name error
-        return error_code;
+        return error_code = -1;
+    }
+
+    if (request.buffer_size == 0) {
+        // Requested data is not a folder
+        return error_code = 1;
     }
 
     struct FAT32DirectoryTable parent_table;
@@ -408,19 +413,23 @@ int8_t delete(struct FAT32DriverRequest request){
 
                 // Delete file
                 // Remove file from file allocation table and storage
-                while (driver_state.fat_table.cluster_map[cluster_number] != FAT32_FAT_END_OF_FILE) {
+                
+                struct ClusterBuffer cbuf;
+                for(uint32_t i = 0; i < CLUSTER_SIZE; i++) {
+                    cbuf.buf[i] = '\0';
+                }
+                do {
                     // Remove file from storage
-                    struct ClusterBuffer cbuf;
-                    for(uint32_t i = 0; i < CLUSTER_SIZE; i++) {
-                        cbuf.buf[i] = '\0';
-                    }
                     write_clusters(&cbuf, cluster_number, 1);
 
                     // Remove file from file allocation table
+                    uint32_t temp_cluster_number = cluster_number;
                     cluster_number = driver_state.fat_table.cluster_map[cluster_number];
-                    driver_state.fat_table.cluster_map[cluster_number] = FAT32_FAT_EMPTY_ENTRY;
-                }
+                    driver_state.fat_table.cluster_map[temp_cluster_number] = FAT32_FAT_EMPTY_ENTRY;
+                } while (driver_state.fat_table.cluster_map[cluster_number] != FAT32_FAT_END_OF_FILE);
+                // Handle EOF cluster
                 driver_state.fat_table.cluster_map[cluster_number] = FAT32_FAT_EMPTY_ENTRY;
+                write_clusters(&cbuf, cluster_number, 1);
 
                 error_code = 0;
             }

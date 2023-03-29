@@ -67,6 +67,13 @@ void kernel_setup(void) {
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
         .buffer_size           = 0,
     } ;
+    struct FAT32DriverRequest request_dir = {
+        .buf                   = cbuf,
+        .name                  = "nbuna1\0\0",
+        .ext                   = "\0\0\0",
+        .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+        .buffer_size           = 0,
+    } ;
 
     write(request);  // Create folder "ikanaide"
     memcpy(request.name, "kano1\0\0\0", 8);
@@ -79,15 +86,31 @@ void kernel_setup(void) {
     memcpy(request.ext, "owo", 3);
     request.buffer_size = 5*CLUSTER_SIZE;
     write(request);  // Create fragmented file "daijoubu"
+    // delete(request);
 
     struct ClusterBuffer readcbuf;
     read_clusters(&readcbuf, ROOT_CLUSTER_NUMBER+1, 1); 
     // If read properly, readcbuf should filled with 'a'
 
+    request.buffer_size = 0;
+    read(request);
     request.buffer_size = CLUSTER_SIZE;
     read(request);   // Failed read due not enough buffer size
     request.buffer_size = 5*CLUSTER_SIZE;
     read(request);   // Success read on file "daijoubu"
+    memcpy(request.name, "test\0\0\0\0", 8);
+    read(request);
+    memcpy(request.name, "\0\0\0\0\0\0\0\0", 8);
+    read(request);
+    memcpy(request.name, "daijoubu", 8);
+
+    write(request_dir);
+    read_directory(request);
+    read_directory(request_dir);
+    memcpy(request_dir.name, "nbunan\0\0", 8);
+    read_directory(request_dir);
+    memcpy(request_dir.name, "\0\0\0\0\0\0\0\0", 8);
+    read_directory(request_dir);
 
     while (TRUE);
 }
