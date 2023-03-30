@@ -1,6 +1,7 @@
 #include "../lib-header/stdtype.h"
 #include "../lib-header/fat32.h"
 #include "../lib-header/stdmem.h"
+// #include "../lib-header/cmos.h"
 
 static struct FAT32DriverState driver_state;
 
@@ -183,7 +184,7 @@ int8_t read_directory(struct FAT32DriverRequest request){
  * @return Error code: 0 success - 1 not a file - 2 not enough buffer - 3 not found - -1 unknown
  */ 
 int8_t read(struct FAT32DriverRequest request){
-    uint8_t error_code = 3;
+    int8_t error_code = 3;
 
     if(memcmp(request.name, "\0\0\0\0\0\0\0\0", 8) == 0) {
         // Empty request name error
@@ -347,21 +348,7 @@ int8_t write(struct FAT32DriverRequest request){
  * @return Error code: 0 success - 1 not found - 2 folder is not empty - -1 unknown
  */
 int8_t delete(struct FAT32DriverRequest request){
-    // struct FAT32DirectoryTable parent_table;
-    // read_clusters(&parent_table, request.parent_cluster_number, 1);
-    // int8_t error_code = -1;
-    // uint8_t found = 0;
-    // uint32_t idx_find = 0;
-    // uint32_t curr_cluster = request.
-    // if (request.) 
-    // for(uint32_t i = 0; i < CLUSTER_SIZE/sizeof(struct FAT32DirectoryEntry); i++) {
-    //     if (memcmp(request.name, parent_table.table[i].name, 8) == 0 &&
-    //         memcmp(request.ext, parent_table.table[i].ext, 3) == 0 &&
-    //         )
-    // }
-
-    // CEKK (bikinan rava)
-    uint8_t error_code = -1;
+    int8_t error_code = -1;
 
     if(memcmp(request.name, "\0\0\0\0\0\0\0\0", 8) == 0) {
         // Empty request name error

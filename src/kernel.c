@@ -11,49 +11,14 @@
 #include "lib-header/fat32.h"
 
 void kernel_setup(void) {
-    // enter_protected_mode(&_gdt_gdtr);   
-    // pic_remap();
-    // initialize_idt();
-    // framebuffer_clear();
-
-    // framebuffer_set_cursor(0, 0);
-    // framebuffer_write_string("> ");
-
-    // initialize_filesystem_fat32();
-
-    // struct ClusterBuffer cbuf[5];
-    // for(uint32_t i = 0; i < 5; i++) {
-    //     for(uint32_t j = 0; j < CLUSTER_SIZE; j++) {
-    //         cbuf[i].buf[j] = i + 'a';
-    //     }
-    // }
-
-    // struct FAT32DriverRequest request = {
-    //     .buf                    = cbuf,
-    //     .name                   = "DIR\0\0\0\0\0",
-    //     .ext                    = "pdf",
-    //     .parent_cluster_number  = ROOT_CLUSTER_NUMBER,
-    //     .buffer_size            = 0,
-    // };
-
-    // write(request);
-    // memcpy(request.name, "HELLO\0\0\0", 8);
-    // request.buffer_size = 5*CLUSTER_SIZE;
-    // write(request);
-
-    // __asm__("int $0x4");
-    // while (TRUE) {
-    //     keyboard_state_activate();
-    // }
-
-    enter_protected_mode(&_gdt_gdtr);
+    enter_protected_mode(&_gdt_gdtr);   
     pic_remap();
     initialize_idt();
-    activate_keyboard_interrupt();
+    // activate_cmos_interrupt();
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
+    framebuffer_write_string("> ");
     initialize_filesystem_fat32();
-    keyboard_state_activate();
 
     struct ClusterBuffer cbuf[5];
     for (uint32_t i = 0; i < 5; i++)
@@ -103,6 +68,7 @@ void kernel_setup(void) {
     memcpy(request.name, "\0\0\0\0\0\0\0\0", 8);
     read(request);
     memcpy(request.name, "daijoubu", 8);
+    // delete(request);
 
     write(request_dir);
     read_directory(request);
@@ -112,5 +78,8 @@ void kernel_setup(void) {
     memcpy(request_dir.name, "\0\0\0\0\0\0\0\0", 8);
     read_directory(request_dir);
 
-    while (TRUE);
+    __asm__("int $0x4");
+    while (TRUE) {
+        keyboard_state_activate();
+    }
 }

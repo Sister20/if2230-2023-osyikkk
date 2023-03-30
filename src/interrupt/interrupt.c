@@ -1,6 +1,5 @@
 #include "../lib-header/interrupt.h"
 
-#define IRQ1 33
 
 void io_wait(void) {
     out(0x80, 0);
@@ -49,14 +48,10 @@ void main_interrupt_handler (
   __attribute__((unused)) struct InterruptStack info
 ) {
   switch (int_number+1) {
-    case IRQ1:
+    case (PIC1_OFFSET + IRQ_KEYBOARD) :
       keyboard_isr();
       break;
-    // case 32:
-      // framebuffer_write(3, 11, 'b', 0, 0xF);
-    //   break;
-
-    // default :
+    // ? : CMOS Masuk sini juga kah? 
   };
 }
 

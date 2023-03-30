@@ -4,6 +4,8 @@
 // TODO : Implement the CMOS driver
 
 #include "portio.h"
+#include "interrupt.h"
+
 // CMOS
 #define CURRENT_YEAR 2023                                    
 #define CMOS_ADDRESS 0x70
@@ -17,8 +19,8 @@
 #define REG_YEAR 0x09   
 
 typedef struct dateNtime{
-    struct date date;
     struct time time;
+    struct date date;
 } __attribute__((packed));
 
 typedef struct date
@@ -37,16 +39,20 @@ typedef struct time
 
 void init_cmos();
 
-int8_t get_update_in_progress_flag();
+int8_t is_update_cmos();
 
 uint8_t get_cmos_reg(int reg);
+
+void set_cmos_reg(int reg, uint8_t value);
       
 void read_cmos();
 
-int8_t is_leap_year(uint8_t year, uint8_t month);
+void write_cmos(struct dateNtime * dnt);
 
-struct date get_date(struct dateNtime dateNtime);
+int8_t is_leap_year(uint16_t year);
 
-struct time get_time(struct dateNtime dateNtime);
+struct date get_currdate();
+
+struct time get_currtime();
 
 #endif

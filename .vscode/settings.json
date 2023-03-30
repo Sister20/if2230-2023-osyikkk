@@ -5,6 +5,7 @@
         "fat32.h": "c",
         "stdtype.h": "c",
         "portio.h": "c",
-        "cmos.h": "c"
+        "cmos.h": "c",
+        "interrupt.h": "c"
     },
 }
