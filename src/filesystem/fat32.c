@@ -354,8 +354,6 @@ int8_t delete(struct FAT32DriverRequest request){
         // Empty request name error
         return error_code;
     }
-    // TODO: Implement invalid parent cluster number exception
-
     struct FAT32DirectoryTable parent_table;
     read_clusters(&parent_table, request.parent_cluster_number, 1);
 

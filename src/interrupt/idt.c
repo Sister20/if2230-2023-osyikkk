@@ -11,15 +11,6 @@ struct InterruptDescriptorTable interrupt_descriptor_table;
 //};
 
 void initialize_idt(void) {
-  /* TODO :
-   * Iterate all isr_stub_table,
-   * Set all IDT entry with set_interrupt_gate()
-   * with following values:
-   * Vector: i
-   * Handler Address: isr_stub_table[i]
-   * Segment: GDT_KERNEL_CODE_SEGMENT_SELECTOR
-   * Privilege: 0
-   */
   // Local initialization of IDT
   _idt_idtr.size = sizeof(interrupt_descriptor_table) - 1;
   _idt_idtr.address = (void *)&interrupt_descriptor_table.table[0];
@@ -35,7 +26,6 @@ void initialize_idt(void) {
 void set_interrupt_gate(uint8_t int_vector, void *handler_address,
                         uint16_t gdt_seg_selector, uint8_t privilege) {
   struct IDTGate *idt_int_gate = &interrupt_descriptor_table.table[int_vector];
-  // TODO : Set handler offset, privilege & segment
   idt_int_gate->offset_low = (uint32_t)handler_address & 0xFFFF;
   idt_int_gate->segment = gdt_seg_selector;
   idt_int_gate->_reserved = 0b0;

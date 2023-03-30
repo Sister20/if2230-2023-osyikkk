@@ -44,7 +44,6 @@ struct IDTGate {
   uint16_t offset_low;
   uint16_t segment;
 
-  // TODO : Implement
   uint8_t _reserved : 5;
   uint8_t _r_bit_1 : 3;
   uint8_t _r_bit_2 : 3;
@@ -62,8 +61,7 @@ struct IDTGate {
  *
  * @param table Fixed-width array of IDTGate with size IDT_MAX_ENTRY_COUNT
  */
-// TODO : Implement
-// ...
+
 struct InterruptDescriptorTable {
   struct IDTGate table[IDT_MAX_ENTRY_COUNT];
 } __attribute__((packed));
@@ -75,8 +73,7 @@ struct InterruptDescriptorTable {
  * @param size      Interrupt Descriptor Table size
  * @param address   IDT address
  */
-// TODO : Implement
-// ...
+
 struct IDTR {
   uint16_t size;
   struct InterruptDescriptorTable *address;

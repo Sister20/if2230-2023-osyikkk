@@ -15,6 +15,13 @@
 
 #define KEYBOARD_BUFFER_SIZE   256
 
+#define SC_MAX 57
+#define SCANCODE_KEYUP_THRESHOLD 0x80
+#define SCANCODE_LSHIFT 42
+#define SCANCODE_CAPS 58
+#define SCANCODE_LEFTARROW 75
+#define SCANCODE_ESC 27
+
 /**
  * keyboard_scancode_1_to_ascii_map[256], Convert scancode values that correspond to ASCII printables
  * How to use this array: ascii_char = k[scancode]

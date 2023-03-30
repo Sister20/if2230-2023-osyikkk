@@ -28,7 +28,6 @@ struct SegmentDescriptor {
     uint8_t type_bit   : 4;
     uint8_t non_system : 1;
     
-    // TODO : Continue GDT definition
     uint8_t dpl : 2;
     uint8_t segment_present : 1;
     uint8_t segment_limit : 4;

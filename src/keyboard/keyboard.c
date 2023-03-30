@@ -4,9 +4,6 @@
 #include "../lib-header/portio.h"
 #include "../lib-header/stdmem.h"
 
-// TODO : Add Feature 
-
-#define SC_MAX 57
 const char keyboard_scancode_1_to_ascii_map[256] = {
     0,   0x1B, '1',  '2', '3',  '4', '5', '6', '7', '8', '9', '0', '-',
     '=', '\b', '\t', 'q', 'w',  'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
@@ -31,7 +28,7 @@ const char keyboard_scancode_1_to_ascii_map[256] = {
     0,   0,    0,    0,   0,    0,   0,   0,   0,   0,   0,
 };
 // CTRL 29
-// LSHIFT 42
+// LSHIFT SCANCODE_LSHIFT
 const char scancode_capital_letters[] = {
     0,   0x1B, '!', '@', '#',  '$', '%', '^',  '&', '*', '(', ')',
     '_', '+',  0,   0,   'Q',  'W', 'E', 'R',  'T', 'Y', 'U', 'I',
@@ -59,16 +56,16 @@ void keyboard_isr(void) {
   } else {
     // Get scancode
     uint8_t scancode = in(KEYBOARD_DATA_PORT);
-    if (scancode == 42) {
+    if (scancode == SCANCODE_LSHIFT) {
       // Left shift scancode key down
       keyboard_state.shift_pressed = 1;
     }
-    if (scancode == 42 + 0x80) {
+    if (scancode == SCANCODE_LSHIFT + SCANCODE_KEYUP_THRESHOLD) {
       // Left shift scancode key up
       keyboard_state.shift_pressed = 0;
     }
 
-    if (scancode == 58) {
+    if (scancode == SCANCODE_CAPS) {
       // Caps lock scancode
       keyboard_state.caps_cond = !keyboard_state.caps_cond;
     }
@@ -81,17 +78,17 @@ void keyboard_isr(void) {
       // Handle uppercase letters
       mapped_char = scancode_capital_letters[scancode];
     }
-    // TODO : Implement scancode processing
 
-    if (scancode < 0x80 && scancode != 42 && scancode != 58) {
+    // Handle if scancode is key down and not capslock
+    if (scancode < SCANCODE_KEYUP_THRESHOLD && scancode != SCANCODE_LSHIFT && scancode != SCANCODE_CAPS) {
       if (scancode != tempCode) {
         if (mapped_char == '\b' && keyboard_state.buffer_index > 0) {
           if (col == 0) {
             framebuffer_set_cursor(row - 1, MAX_COLS - 1);
-            framebuffer_write(row - 1, MAX_COLS - 1, ' ', WHITE, BLACK);
+            framebuffer_write(row - 1, MAX_COLS - 1, '\0', WHITE, BLACK);
           } else {
             framebuffer_set_cursor(row, col - 1);
-            framebuffer_write(row, col - 1, ' ', WHITE, BLACK);
+            framebuffer_write(row, col - 1, '\0', WHITE, BLACK);
           }
           keyboard_state.buffer_index--;
           keyboard_state.keyboard_buffer[keyboard_state.buffer_index] = '\0';
@@ -99,17 +96,23 @@ void keyboard_isr(void) {
           execute_cmd(keyboard_state.keyboard_buffer);
           memset(keyboard_state.keyboard_buffer, 0, 256);
           keyboard_state.buffer_index = 0;
-        } else if (mapped_char != '\b' && scancode != 75) {
+        } else if (mapped_char != '\b' && scancode != SCANCODE_LEFTARROW) {
           keyboard_state.keyboard_buffer[keyboard_state.buffer_index] =
               mapped_char;
           keyboard_state.buffer_index++;
-          framebuffer_write(row, col, mapped_char, 0xF, 0);
-          framebuffer_set_cursor(row, col + 1);
-        } else if (scancode == 75 && col != 2) {
+
+          int offset = row * MAX_COLS + col;
+          if (row == (MAX_ROWS - 1) && col == (MAX_COLS - 1)) {
+            offset = framebuffer_scroll_ln(offset);
+          }
+
+          framebuffer_write(offset / MAX_COLS, offset % MAX_COLS, mapped_char, WHITE, BLACK);
+          framebuffer_set_cursor(offset / MAX_COLS, offset % MAX_COLS + 1);
+        } else if (scancode == SCANCODE_LEFTARROW && col != 2) {
           framebuffer_set_cursor(row, col - 1);
         }
         tempCode = scancode;
-        if (mapped_char == 27) {
+        if (mapped_char == SCANCODE_ESC) {
           clear_screen();
         }
         // framebuffer_set_cursor(row, col);
@@ -153,19 +156,19 @@ int strcmp(char *s1, char *s2) {
 }
 
 void execute_cmd(char *input) {
-  if (strcmp(input, "clear") == 0) {
+  // execute command from input 
+  if (strcmp(input, "clear") == 0) { 
+    // clear screen
     clear_screen();
     framebuffer_set_cursor(0, 0);
     framebuffer_write_string("> ");
   } else {
     if (strcmp(input, "help") == 0) {
+      // list of available commands
       framebuffer_write_string("\nAvailable commands:\n");
       framebuffer_write_string("clear - Clear the screen\n");
-      framebuffer_write_string("help - List of available commands\n");
+      framebuffer_write_string("help - List of available commands");
     } else if (strcmp(&input[3], "del") == 0) {
-      // get filename from input
-      // char filename[256];
-      // for 
       framebuffer_write_string("\nDeleting file: ");
       framebuffer_write_string(input);
     } else {

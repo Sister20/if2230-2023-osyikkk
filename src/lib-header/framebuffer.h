@@ -64,12 +64,15 @@ struct Cursor framebuffer_get_cursor();
 void framebuffer_clear(void);
 
 /**
- * @param char* str
- *  Write string to framebuffer
+ * @brief Write string to framebuffer
+ *
+ * @param char* str  
  */
 void framebuffer_write_string(char *str);
 
 /**
+ * @brief scroll framebuffer by offset lines
+ *
  * @param int offset 
  *  Scroll framebuffer by offset lines
  */

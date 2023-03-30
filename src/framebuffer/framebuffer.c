@@ -5,13 +5,7 @@
 
 
 void framebuffer_set_cursor(uint8_t r, uint8_t c) {
-    // TODO : Implement
-    uint16_t pos = r * MAX_COLS + c;
-    // out(0x3D4, 0x0F);
-    // out(0x3D5, (uint8_t)(pos & 0xFF));
-    // out(0x3D4, 0x0E);
-    // out(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
-    
+    uint16_t pos = r * MAX_COLS + c;    
     out(CURSOR_PORT_CMD, VGA_CURSOR_HIGH);
     out(CURSOR_PORT_DATA, (uint8_t)((pos >> 8) & 0xFF));
     out(CURSOR_PORT_CMD, VGA_CURSOR_LOW);
@@ -61,49 +55,31 @@ void framebuffer_write_string(char * str) {
     struct Cursor c = framebuffer_get_cursor();
     int offset = c.row * MAX_COLS + c.col;
     int i = 0;
-    bool cursor_bottom_row = 0;
     while (str[i] != '\0') {
-        if (offset >= MAX_COLS * MAX_ROWS) {
-            offset = framebuffer_scroll_ln(offset);
-            cursor_bottom_row = 1;
+        if (offset >= MAX_COLS * (MAX_ROWS)) {
+             offset = framebuffer_scroll_ln(offset);
         }
         if (str[i] == '\n') {
-            // offset = (offset / 160 + 1) * 160;
             offset = (offset / MAX_COLS + 1) * MAX_COLS;
         } else {
-            // framebuffer_write(offset / 160, offset % 160, str[i], WHITE, BLACK);
             framebuffer_write(offset / MAX_COLS, offset % MAX_COLS, str[i], WHITE, BLACK);
             offset += 1;
         }
         i++;
     }
-    if (cursor_bottom_row) {
-        framebuffer_set_cursor(MAX_ROWS - 1, 1);
-    } else {
-        framebuffer_set_cursor(offset / MAX_COLS, offset % MAX_COLS);
-    }
+
+    framebuffer_set_cursor(offset / MAX_COLS, offset % MAX_COLS);
 }
 
-// TODO: scrolling mechanism still not finished
 int framebuffer_scroll_ln(int offset) {
-    // di enter dulu baru scroll
     memcpy(
         (void *)MEMORY_FRAMEBUFFER, 
         (void *)(MEMORY_FRAMEBUFFER + MAX_COLS * 2),
-        // (void *)(MEMORY_FRAMEBUFFER + MAX_COLS * 2),
-        //  160 * 2 * 24);
-        // 2 * MAX_COLS * 2 * (MAX_ROWS - 1));
-        MAX_COLS * 2 * (MAX_ROWS + 1));
+        MAX_COLS * 2 * (MAX_ROWS));
 
     for (int i = 0; i < MAX_COLS; i++) {
         framebuffer_write(MAX_ROWS - 1, i, ' ', WHITE, BLACK);
-        framebuffer_write(MAX_ROWS - 2, i, ' ', WHITE, BLACK);
-        // framebuffer_write(MAX_ROWS - 3, i, ' ', WHITE, BLACK);
     }
 
-
-    // return (c.row * MAX_COLS + c.col) - (MAX_ROWS - 1) * MAX_COLS;
-    // return (c.row * MAX_COLS + c.col) - 2 * MAX_COLS;
-    return (offset) - 3 * (MAX_COLS);
-    // return offset - (MAX_ROWS - 1) * MAX_COLS;
+    return (offset) - (1 * (MAX_COLS));
 }

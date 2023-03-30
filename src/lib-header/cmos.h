@@ -1,7 +1,7 @@
 #ifndef _CMOS_H
 #define _CMOS_H
 
-// TODO : Implement the CMOS driver
+// TODO : Belum diintegrasiin ke fat32
 
 #include "portio.h"
 #include "interrupt.h"

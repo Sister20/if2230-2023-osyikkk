@@ -9,9 +9,6 @@
 struct GlobalDescriptorTable global_descriptor_table = {
     .table = {
         {
-            // TODO : Implement
-
-
             // First 32-bit
             .segment_low = 0x0000,
             .base_low = 0x0000,
@@ -21,7 +18,6 @@ struct GlobalDescriptorTable global_descriptor_table = {
             .type_bit = 0x0,
             .non_system = 0x0,
             
-            // TODO : Continue GDT definition
             .dpl = 0x0,
             .segment_present = 0x0,
             .segment_limit = 0x0,
@@ -32,7 +28,6 @@ struct GlobalDescriptorTable global_descriptor_table = {
             .base_high = 0x0
         },
         {
-            // TODO : Implement
             // Kernel Code Segment
 
             // First 32-bit
@@ -44,7 +39,6 @@ struct GlobalDescriptorTable global_descriptor_table = {
             .type_bit = 0xA,
             .non_system = 0x1,
             
-            // TODO : Continue GDT definition
             .dpl = 0x0,
             .segment_present = 0x1,
             .segment_limit = 0xF,
@@ -55,7 +49,6 @@ struct GlobalDescriptorTable global_descriptor_table = {
             .base_high = 0x00
         },
         {
-            // TODO : Implement
             // Kernel Data Segment
 
             // First 32-bit
@@ -67,7 +60,6 @@ struct GlobalDescriptorTable global_descriptor_table = {
             .type_bit = 0x2,
             .non_system = 0x1,
 
-            // TODO : Continue GDT definition
             .dpl = 0x0,
             .segment_present = 0x1,
             .segment_limit = 0xF,
@@ -86,7 +78,6 @@ struct GlobalDescriptorTable global_descriptor_table = {
  * From: https://wiki.osdev.org/Global_Descriptor_Table, GDTR.size is GDT size minus 1.
  */
 struct GDTR _gdt_gdtr = {
-    // TODO : Implement, this GDTR will point to global_descriptor_table. 
     //        Use sizeof operator
     .size = sizeof(global_descriptor_table) - 1,
     
