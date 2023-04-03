@@ -1,7 +1,7 @@
 #ifndef _PAGING_H
 #define _PAGING_H
 
-#include "stdtype.h"
+#include "./stdtype.h"
 
 #define PAGE_ENTRY_COUNT 1024
 #define PAGE_FRAME_SIZE  (4*1024*1024)
@@ -9,18 +9,31 @@
 // Operating system page directory, using page size PAGE_FRAME_SIZE (4 MiB)
 extern struct PageDirectory _paging_kernel_page_directory;
 
-
+// ? : Activating paging
 
 
 /**
  * Page Directory Entry Flag, only first 8 bit
  * 
- * @param present_bit       Indicate whether this entry is exist or not
- * ...
+ * @param present_bit           Indicate whether this entry is exist or not
+ * @param read_write_bit        
+ * @param user_supervisor_bit 
+ * @param write_through_bit   
+ * @param cache_disable_bit   
+ * @param accessed_bit        
+ * @param available_bit       
+ * @param page_size_bit       
  */
 struct PageDirectoryEntryFlag {
-    uint8_t present_bit        : 1;
+    uint8_t present_bit         : 1;
     // TODO : Continue. Note: Only first 8 bit flags
+    uint8_t write_bit           : 1;
+    uint8_t user_bit            : 1;
+    uint8_t write_through_bit   : 1;
+    uint8_t cache_disable_bit   : 1;
+    uint8_t accessed_bit        : 1;
+    uint8_t available_bit       : 1;
+    uint8_t use_pagesize_4_mb   : 1;
 } __attribute__((packed));
 
 /**
@@ -38,6 +51,11 @@ struct PageDirectoryEntry {
     struct PageDirectoryEntryFlag flag;
     uint16_t global_page    : 1;
     // TODO : Continue, Use uint16_t + bitfield here, Do not use uint8_t
+    uint16_t available : 3;
+    uint16_t pat_bit : 1;
+    uint16_t higher_address: 8;
+    uint16_t reserved : 1;
+    uint16_t lower_address : 10;
 } __attribute__((packed));
 
 /**
@@ -51,7 +69,8 @@ struct PageDirectoryEntry {
  */
 struct PageDirectory {
     // TODO : Implement
-} __attribute__((packed));
+    struct PageDirectoryEntry table[PAGE_ENTRY_COUNT];
+} __attribute__((aligned(0x1000)));
 
 /**
  * Containing page driver states
@@ -61,9 +80,6 @@ struct PageDirectory {
 struct PageDriverState {
     uint8_t *last_available_physical_addr;
 } __attribute__((packed));
-
-
-
 
 
 /**
