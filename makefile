@@ -9,6 +9,7 @@ INTERRUPT_FOLDER = interrupt
 KEYBOARD_FOLDER = keyboard
 FILESYSTEM_FOLDER = filesystem
 FRAMEBUFFER_FOLDER = framebuffer
+PAGING_FOLDER = paging
 # SOURCE_FOLDER = bin/iso/boot/grub
 OUTPUT_FOLDER = bin
 ISO_NAME      = OSyikkk
@@ -51,7 +52,7 @@ kernel:
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(KEYBOARD_FOLDER)/keyboard.c -o $(OUTPUT_FOLDER)/keyboard.o	
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(FILESYSTEM_FOLDER)/disk.c -o $(OUTPUT_FOLDER)/disk.o	
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(FILESYSTEM_FOLDER)/fat32.c -o $(OUTPUT_FOLDER)/fat32.o	
-	
+	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(PAGING_FOLDER)/paging.c -o $(OUTPUT_FOLDER)/paging.o	
 	
 	@$(LIN) $(LFLAGS) bin/*.o -o $(OUTPUT_FOLDER)/kernel
 	@echo Linking object files and generate elf32...
