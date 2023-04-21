@@ -9,16 +9,27 @@
 #include "lib-header/keyboard.h"
 #include "lib-header/disk.h"
 #include "lib-header/fat32.h"
+#include "lib-header/paging.h"
+
+// TODO : inserter masih segmentation fault
 
 void kernel_setup(void) {
     enter_protected_mode(&_gdt_gdtr);   
     pic_remap();
     initialize_idt();
-    // activate_cmos_interrupt();
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
     framebuffer_write_string("> ");
+
+    activate_keyboard_interrupt();
     initialize_filesystem_fat32();
+    gdt_install_tss();
+    set_tss_register();
+    
+    // Allocate first 4 MiB virtual memory
+    allocate_single_user_page_frame((uint8_t*) 0);
+
+
 
     struct ClusterBuffer cbuf[5];
     for (uint32_t i = 0; i < 5; i++)
@@ -79,6 +90,11 @@ void kernel_setup(void) {
     read_directory(request_dir);
 
     __asm__("int $0x4");
+
+    // Set TSS $esp pointer and jump into shell 
+    set_tss_kernel_current_stack();
+    kernel_execute_user_program((uint8_t*) 0);
+    
     while (TRUE) {
         keyboard_state_activate();
     }

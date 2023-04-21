@@ -1,5 +1,6 @@
 #include "../lib-header/interrupt.h"
 
+struct TSSEntry _interrupt_tss_entry;
 
 void io_wait(void) {
     out(0x80, 0);
@@ -56,8 +57,8 @@ void main_interrupt_handler (
 }
 
 void activate_keyboard_interrupt(void) {
-    out(PIC1_DATA, PIC_DISABLE_ALL_MASK ^ (1 << IRQ_KEYBOARD));
-    out(PIC2_DATA, PIC_DISABLE_ALL_MASK);
+    // Activate keyboard interrupt
+    out(PIC1_DATA, in(PIC1_DATA) & ~(1 << IRQ_KEYBOARD));
 }
 
 void set_tss_kernel_current_stack(void) {

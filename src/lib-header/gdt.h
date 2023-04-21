@@ -5,6 +5,7 @@
 #define GDT_TSS_SELECTOR                 0x28
 
 #include "lib-header/stdtype.h"
+#include "lib-header/interrupt.h"
 
 #define GDT_MAX_ENTRY_COUNT 32
 

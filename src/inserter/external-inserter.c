@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../lib-header/stdtype.h"
+#include "../lib-header/stdmem.h"
+
 // Usual gcc fixed width integer type 
 typedef u_int32_t uint32_t;
 typedef u_int8_t  uint8_t;
@@ -68,7 +71,7 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Filename : %s\n",  argv[1]);
-    printf("Filesize : %ld bytes\n", filesize);
+    printf("Filesize : %d bytes\n", filesize);
 
     // FAT32 operations
     initialize_filesystem_fat32();

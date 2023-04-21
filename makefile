@@ -54,8 +54,7 @@ kernel: inserter
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(KEYBOARD_FOLDER)/keyboard.c -o $(OUTPUT_FOLDER)/keyboard.o	
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(FILESYSTEM_FOLDER)/disk.c -o $(OUTPUT_FOLDER)/disk.o	
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(FILESYSTEM_FOLDER)/fat32.c -o $(OUTPUT_FOLDER)/fat32.o	
-	
-	
+
 	@$(LIN) $(LFLAGS) bin/*.o -o $(OUTPUT_FOLDER)/kernel
 	@echo Linking object files and generate elf32...
 	@rm -f *.o
@@ -82,3 +81,16 @@ inserter:
 		$(SOURCE_FOLDER)/stdmem.c $(SOURCE_FOLDER)/$(FILESYSTEM_FOLDER)/fat32.c \
 		$(SOURCE_FOLDER)/$(INSERTER_FOLDER)/external-inserter.c \
 		-o $(OUTPUT_FOLDER)/inserter
+
+user-shell:
+	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/user-entry.s -o user-entry.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user-shell.c -o user-shell.o
+	@$(LIN) -T $(SOURCE_FOLDER)/user-linker.ld -melf_i386 \
+		user-entry.o user-shell.o -o $(OUTPUT_FOLDER)/shell
+	@echo Linking object shell object files and generate flat binary...
+	@size --target=binary bin/shell
+	@rm -f *.o
+
+insert-shell: inserter user-shell
+	@echo Inserting shell into root directory...
+	@cd $(OUTPUT_FOLDER); ./inserter shell 2 $(DISK_NAME).bin
