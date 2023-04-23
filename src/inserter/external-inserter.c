@@ -7,7 +7,7 @@
 // typedef u_int8_t  uint8_t;
 
 typedef unsigned int uint32_t;
-typedef unsigned int uint8_t;
+typedef unsigned char uint8_t;
 typedef signed char int8_t;
 
 // Manual import from fat32.h, disk.h, & stdmem.h due some issue with size_t
