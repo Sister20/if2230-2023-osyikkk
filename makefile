@@ -10,6 +10,7 @@ KEYBOARD_FOLDER = keyboard
 FILESYSTEM_FOLDER = filesystem
 FRAMEBUFFER_FOLDER = framebuffer
 PAGING_FOLDER = paging
+INSERTER_FOLDER = inserter
 # SOURCE_FOLDER = bin/iso/boot/grub
 OUTPUT_FOLDER = bin
 ISO_NAME      = OSyikkk
@@ -74,4 +75,9 @@ iso: kernel
 	-boot-info-table           \
 	-o $(OUTPUT_FOLDER)/$(ISO_NAME).iso              \
 	$(OUTPUT_FOLDER)/iso
-	
+
+inserter:
+	@$(CC) -Wno-builtin-declaration-mismatch -g \
+		$(SOURCE_FOLDER)/stdmem.c $(SOURCE_FOLDER)/$(FILESYSTEM_FOLDER)/fat32.c \
+		$(SOURCE_FOLDER)/$(INSERTER_FOLDER)/external-inserter.c \
+		-o $(OUTPUT_FOLDER)/inserter

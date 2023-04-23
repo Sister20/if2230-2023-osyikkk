@@ -47,7 +47,7 @@ void main_interrupt_handler (
   uint32_t int_number,
   __attribute__((unused)) struct InterruptStack info
 ) {
-  switch (int_number+1) {
+  switch (int_number) {
     case (PIC1_OFFSET + IRQ_KEYBOARD) :
       keyboard_isr();
       break;

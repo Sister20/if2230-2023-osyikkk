@@ -18,6 +18,7 @@ void kernel_setup(void) {
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
     framebuffer_write_string("> ");
+    activate_keyboard_interrupt();
     initialize_filesystem_fat32();
 
     struct ClusterBuffer cbuf[5];

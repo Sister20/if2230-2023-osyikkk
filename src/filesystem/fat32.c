@@ -1,6 +1,7 @@
 #include "../lib-header/stdtype.h"
 #include "../lib-header/fat32.h"
 #include "../lib-header/stdmem.h"
+#include "../lib-header/disk.h"
 // #include "../lib-header/cmos.h"
 
 static struct FAT32DriverState driver_state;

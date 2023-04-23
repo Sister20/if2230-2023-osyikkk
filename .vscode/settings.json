@@ -6,6 +6,10 @@
         "stdtype.h": "c",
         "portio.h": "c",
         "cmos.h": "c",
-        "interrupt.h": "c"
+        "interrupt.h": "c",
+        "atomic": "c",
+        "cstdint": "c",
+        "random": "c",
+        "*.tcc": "c"
     },
 }

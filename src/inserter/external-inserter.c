@@ -1,9 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+// #include "../lib-header/disk.h"
 
 // Usual gcc fixed width integer type 
-typedef u_int32_t uint32_t;
-typedef u_int8_t  uint8_t;
+// typedef u_int32_t uint32_t;
+// typedef u_int8_t  uint8_t;
+
+typedef unsigned int uint32_t;
+typedef unsigned int uint8_t;
+typedef signed char int8_t;
 
 // Manual import from fat32.h, disk.h, & stdmem.h due some issue with size_t
 #define BLOCK_SIZE      512
@@ -25,11 +30,14 @@ int8_t write(struct FAT32DriverRequest request);
 int8_t delete(struct FAT32DriverRequest request);
 
 
-
-
 // Global variable
 uint8_t *image_storage;
 uint8_t *file_buffer;
+
+// void read_blocks(void *ptr, uint32_t logical_block_address, uint8_t block_count) {
+//     for (int i = 0; i < block_count; i++)
+//         memcpy((uint8_t*) ptr + BLOCK_SIZE*i, image_storage + logical_block_address * BLOCK_SIZE / 4 + BLOCK_SIZE*(i) / 4, BLOCK_SIZE);
+// }
 
 void read_blocks(void *ptr, uint32_t logical_block_address, uint8_t block_count) {
     for (int i = 0; i < block_count; i++)
@@ -72,6 +80,7 @@ int main(int argc, char *argv[]) {
 
     // FAT32 operations
     initialize_filesystem_fat32();
+    
     struct FAT32DriverRequest request = {
         .buf         = file_buffer,
         .ext         = "\0\0\0",
