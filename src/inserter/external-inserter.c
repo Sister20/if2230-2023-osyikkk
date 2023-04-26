@@ -80,7 +80,11 @@ int main(int argc, char *argv[]) {
 
     // FAT32 operations
     initialize_filesystem_fat32();
-    
+
+    if(filesize != 0) {
+        filesize = ((filesize-1) / 0x800 + 1) * 0x800; // 0x800 is cluster size in bytes
+    }
+
     struct FAT32DriverRequest request = {
         .buf         = file_buffer,
         .ext         = "\0\0\0",

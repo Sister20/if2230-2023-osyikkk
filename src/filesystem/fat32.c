@@ -224,7 +224,6 @@ int8_t read(struct FAT32DriverRequest request){
                 cluster_number = driver_state.fat_table.cluster_map[cluster_number];
                 j++;
             }
-            read_clusters((struct ClusterBuffer*) (request.buf) + j, cluster_number, 1);
             return error_code = 0;
         } 
     }

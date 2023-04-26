@@ -10,6 +10,7 @@
         "atomic": "c",
         "cstdint": "c",
         "random": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "gdt.h": "c"
     },
 }
