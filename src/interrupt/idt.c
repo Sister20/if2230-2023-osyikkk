@@ -16,8 +16,13 @@ void initialize_idt(void) {
   _idt_idtr.address = (void *)&interrupt_descriptor_table.table[0];
 
   for (uint8_t i = 0; i < ISR_STUB_TABLE_LIMIT; i++) {
-    set_interrupt_gate(i, isr_stub_table[i], GDT_KERNEL_CODE_SEGMENT_SELECTOR,
-                       0);
+    if (i>=0x30 && i<=0x3F) {
+      set_interrupt_gate(i, isr_stub_table[i], GDT_KERNEL_CODE_SEGMENT_SELECTOR,
+                         0x3);
+    } else {
+      set_interrupt_gate(i, isr_stub_table[i], GDT_KERNEL_CODE_SEGMENT_SELECTOR,
+                         0x0);
+    }
   }
   __asm__ volatile("lidt %0" : : "m"(_idt_idtr));
   __asm__ volatile("sti");

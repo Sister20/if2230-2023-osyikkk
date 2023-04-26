@@ -63,7 +63,7 @@ kernel:
 	@rm -f *.o
 
 iso: kernel
-	# @rm -r $(OUTPUT_FOLDER)/iso/
+	@rm -r $(OUTPUT_FOLDER)/iso/
 	@mkdir -p $(OUTPUT_FOLDER)/iso/boot/grub
 	@cp $(OUTPUT_FOLDER)/kernel     $(OUTPUT_FOLDER)/iso/boot/
 	@cp other/grub1                 $(OUTPUT_FOLDER)/iso/boot/grub/

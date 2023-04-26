@@ -11,6 +11,8 @@
         "cstdint": "c",
         "random": "c",
         "*.tcc": "c",
-        "gdt.h": "c"
+        "gdt.h": "c",
+        "cstdio": "c",
+        "cstring": "c"
     },
 }
