@@ -75,7 +75,7 @@ void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptSta
         memcpy((char *) cpu.ebx, buf, cpu.ecx);
     } else if (cpu.eax == 5) {
         // TODO: buat puts
-        puts((char *) cpu.ebx, cpu.ecx, cpu.edx); // Modified puts() on kernel side
+        // puts((char *) cpu.ebx, cpu.ecx, cpu.edx); // Modified puts() on kernel side
     }
 
 }
