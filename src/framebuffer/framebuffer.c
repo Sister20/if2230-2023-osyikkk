@@ -51,7 +51,7 @@ void framebuffer_clear(void) {
     }   
 }
 
-void framebuffer_write_string(char * str) {
+void framebuffer_write_string(char * str, uint8_t text_color) {
     struct Cursor c = framebuffer_get_cursor();
     int offset = c.row * MAX_COLS + c.col;
     int i = 0;
@@ -62,7 +62,7 @@ void framebuffer_write_string(char * str) {
         if (str[i] == '\n') {
             offset = (offset / MAX_COLS + 1) * MAX_COLS;
         } else {
-            framebuffer_write(offset / MAX_COLS, offset % MAX_COLS, str[i], WHITE, BLACK);
+            framebuffer_write(offset / MAX_COLS, offset % MAX_COLS, str[i], text_color, BLACK);
             offset += 1;
         }
         i++;

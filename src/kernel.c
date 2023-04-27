@@ -20,7 +20,7 @@ void kernel_setup(void) {
     activate_keyboard_interrupt();
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
-    framebuffer_write_string("> ");
+    framebuffer_write_string("> ", 0x0F);
     initialize_filesystem_fat32();
     gdt_install_tss();
     set_tss_register();
