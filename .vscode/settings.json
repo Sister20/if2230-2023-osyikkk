@@ -13,6 +13,8 @@
         "*.tcc": "c",
         "gdt.h": "c",
         "cstdio": "c",
-        "cstring": "c"
+        "cstring": "c",
+        "typeindex": "c",
+        "typeinfo": "c"
     },
 }
