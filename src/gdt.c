@@ -1,3 +1,4 @@
+#include "lib-header/stdtype.h"
 #include "lib-header/gdt.h"
 
 /**
@@ -121,7 +122,7 @@ static struct GlobalDescriptorTable global_descriptor_table = {
             .segment_limit = (sizeof(struct TSSEntry) & (0xF << 16)) >> 16,
             .avl = 0x0,
             .code_seg_64bit = 0x0,
-            .def_op_size = 0x0,
+            .def_op_size = 0x1,
             .granularity = 0x0,
             .base_high = 0x00
         },
@@ -140,102 +141,6 @@ struct GDTR _gdt_gdtr = {
     
     .address = &global_descriptor_table
 };
-
-// static struct GlobalDescriptorTable global_descriptor_table = {
-//     // source: https://wiki.osdev.org/Global_Descriptor_Table
-//     // source: https://wiki.osdev.org/Segment_Descriptor
-//     // source: https://wiki.osdev.org/Protected_Mode
-//     // source: https://wiki.osdev.org/Long_Mode
-//     // source : https://wiki.osdev.org/IA-32e_Mode
-//     // source : http://www.independent-software.com/operating-system-development-protected-mode-global-descriptor-table.html
-//     .table = {
-//         {/* TODO: Null Descriptor */
-//             .segment_low       = 0x0000,
-//             .base_low          = 0x0000,
-//             .base_mid          = 0x00,
-//             .non_system        = 0,    // S bit
-//             .type_bit          = 0x0,
-//             .privilege         = 0,    // DPL
-//             .valid_bit         = 0,    // P bit
-//             .opr_32_bit        = 0,    // D/B bit
-//             .long_mode         = 0,    // L bit
-//             .granularity       = 0,    // G bit
-//             .base_high         = 0x00   
-//         },
-
-//         {/* TODO: Kernel Code Descriptor */
-//             .segment_low       = 0xFFFF,
-//             .base_low          = 0x0000,
-//             .base_mid          = 0x00,
-//             .non_system        = 1,    // S bit
-//             .type_bit          = 0xA,
-//             .privilege         = 0,    // DPL
-//             .valid_bit         = 1,    // P bit
-//             .opr_32_bit        = 1,    // D/B bit
-//             .long_mode         = 1,    // L bit
-//             .granularity       = 1,    // G bit
-//             .base_high         = 0x00   
-//         },
-        
-//         {/* TODO: Kernel Data Descriptor */
-//             .segment_low       = 0xFFFF,
-//             .base_low          = 0x0000,
-//             .base_mid          = 0x00,
-//             .non_system        = 1,    // S bit
-//             .type_bit          = 0x2,
-//             .privilege         = 0,    // DPL
-//             .valid_bit         = 1,    // P bit
-//             .opr_32_bit        = 1,    // D/B bit
-//             .long_mode         = 0,    // L bit
-//             .granularity       = 1,    // G bit
-//             .base_high         = 0x00   
-//         },
-        
-//         {/* TODO: User   Code Descriptor */
-//             .segment_low       = 0xFFFF,
-//             .base_low          = 0x0000,
-//             .base_mid          = 0x00,
-//             .non_system        = 1,    // S bit
-//             .type_bit          = 0xA,
-//             .privilege         = 3,    // DPL
-//             .valid_bit         = 1,    // P bit
-//             .opr_32_bit        = 1,    // D/B bit
-//             .long_mode         = 1,    // L bit
-//             .granularity       = 1,    // G bit
-//             .base_high         = 0x00   
-//         },
-        
-//         {/* TODO: User   Data Descriptor */
-//             .segment_low       = 0xFFFF,
-//             .base_low          = 0x0000,
-//             .base_mid          = 0x00,
-//             .non_system        = 1,    // S bit
-//             .type_bit          = 0x2,
-//             .privilege         = 3,    // DPL
-//             .valid_bit         = 1,    // P bit
-//             .opr_32_bit        = 1,    // D/B bit
-//             .long_mode         = 0,    // L bit
-//             .granularity       = 1,    // G bit
-//             .base_high         = 0x00   
-//         },
-        
-//         {
-//             .segment_high      = (sizeof(struct TSSEntry) & (0xF << 16)) >> 16,
-//             .segment_low       = sizeof(struct TSSEntry),
-//             .base_high         = 0,
-//             .base_mid          = 0,
-//             .base_low          = 0,
-//             .non_system        = 0,    // S bit
-//             .type_bit          = 0x9,
-//             .privilege         = 0,    // DPL
-//             .valid_bit         = 1,    // P bit
-//             .opr_32_bit        = 1,    // D/B bit
-//             .long_mode         = 0,    // L bit
-//             .granularity       = 0,    // G bit
-//         },
-//         {0}
-//     }
-// };
 
 void gdt_install_tss(void) {
     uint32_t base = (uint32_t) &_interrupt_tss_entry;

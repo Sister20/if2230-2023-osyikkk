@@ -1,7 +1,8 @@
 #ifndef _STDMEM_H
 #define _STDMEM_H
 
-#include "stdtype.h"
+// #include "stdtype.h"
+#include "../lib-header/stdtype.h"
 
 #define VIDEO_ADDR 0xB8000
 

@@ -9,8 +9,8 @@ INTERRUPT_FOLDER = interrupt
 KEYBOARD_FOLDER = keyboard
 FILESYSTEM_FOLDER = filesystem
 FRAMEBUFFER_FOLDER = framebuffer
+PAGING_FOLDER = paging
 INSERTER_FOLDER = inserter
-
 # SOURCE_FOLDER = bin/iso/boot/grub
 OUTPUT_FOLDER = bin
 ISO_NAME      = OSyikkk
@@ -20,9 +20,8 @@ DISK_NAME = storage
 # Flags
 WARNING_CFLAG = -Wall -Wextra -Werror
 DEBUG_CFLAG   = -ffreestanding -fshort-wchar -g
-# STRIP_CFLAG   = -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs
-# CFLAGS        = $(DEBUG_CFLAG) $(WARNING_CFLAG) $(STRIP_CFLAG) -m32 -c -I$(SOURCE_FOLDER)
-CFLAGS        = $(DEBUG_CFLAG) $(WARNING_CFLAG) -m32 -c -I$(SOURCE_FOLDER)
+STRIP_CFLAG   = -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs
+CFLAGS        = $(DEBUG_CFLAG) $(WARNING_CFLAG) $(STRIP_CFLAG) -m32 -c -I$(SOURCE_FOLDER)
 AFLAGS        = -f elf32 -g -F dwarf
 LFLAGS        = -T $(SOURCE_FOLDER)/linker.ld -melf_i386
 
@@ -36,11 +35,14 @@ all: build
 build: iso
 clean:
 	rm -rf *.o *.iso $(OUTPUT_FOLDER)/kernel
+
+first : disk insert-shell
+
 disk:
 	@qemu-img create -f raw $(OUTPUT_FOLDER)/$(DISK_NAME).bin 4M	
 
 
-kernel: inserter
+kernel:
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/kernel_loader.s -o $(OUTPUT_FOLDER)/kernel_loader.o
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/$(INTERRUPT_FOLDER)/intsetup.s -o $(OUTPUT_FOLDER)/intsetup.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/kernel.c -o $(OUTPUT_FOLDER)/kernel.o
@@ -54,13 +56,14 @@ kernel: inserter
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(KEYBOARD_FOLDER)/keyboard.c -o $(OUTPUT_FOLDER)/keyboard.o	
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(FILESYSTEM_FOLDER)/disk.c -o $(OUTPUT_FOLDER)/disk.o	
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(FILESYSTEM_FOLDER)/fat32.c -o $(OUTPUT_FOLDER)/fat32.o	
-
+	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/$(PAGING_FOLDER)/paging.c -o $(OUTPUT_FOLDER)/paging.o	
+	
 	@$(LIN) $(LFLAGS) bin/*.o -o $(OUTPUT_FOLDER)/kernel
 	@echo Linking object files and generate elf32...
 	@rm -f *.o
 
 iso: kernel
-	# @rm -r $(OUTPUT_FOLDER)/iso/
+	@rm -r $(OUTPUT_FOLDER)/iso/
 	@mkdir -p $(OUTPUT_FOLDER)/iso/boot/grub
 	@cp $(OUTPUT_FOLDER)/kernel     $(OUTPUT_FOLDER)/iso/boot/
 	@cp other/grub1                 $(OUTPUT_FOLDER)/iso/boot/grub/
@@ -75,9 +78,9 @@ iso: kernel
 	-boot-info-table           \
 	-o $(OUTPUT_FOLDER)/$(ISO_NAME).iso              \
 	$(OUTPUT_FOLDER)/iso
-	
+
 inserter:
-	$(CC) -Wno-builtin-declaration-mismatch \
+	@$(CC) -Wno-builtin-declaration-mismatch -g \
 		$(SOURCE_FOLDER)/stdmem.c $(SOURCE_FOLDER)/$(FILESYSTEM_FOLDER)/fat32.c \
 		$(SOURCE_FOLDER)/$(INSERTER_FOLDER)/external-inserter.c \
 		-o $(OUTPUT_FOLDER)/inserter

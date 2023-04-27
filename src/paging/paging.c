@@ -30,6 +30,7 @@ void update_page_directory_entry(void *physical_addr, void *virtual_addr, struct
 }
 
 int8_t allocate_single_user_page_frame(void *virtual_addr) {
+    // Using default QEMU config (128 MiB max memory)
     uint32_t start = (uint32_t) page_driver_state.last_available_physical_addr;
     if (start == 0x100000) {
         return -1;
@@ -43,6 +44,7 @@ int8_t allocate_single_user_page_frame(void *virtual_addr) {
         page_driver_state.last_available_physical_addr = (uint8_t*) start + PAGE_FRAME_SIZE;
         return 0;
     }
+
 }
 
 void flush_single_tlb(void *virtual_addr) {

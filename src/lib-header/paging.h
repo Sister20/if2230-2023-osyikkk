@@ -1,7 +1,7 @@
 #ifndef _PAGING_H
 #define _PAGING_H
 
-#include "./stdtype.h"
+#include "stdtype.h"
 
 #define PAGE_ENTRY_COUNT 1024
 #define PAGE_FRAME_SIZE  (4*1024*1024)
@@ -9,23 +9,23 @@
 // Operating system page directory, using page size PAGE_FRAME_SIZE (4 MiB)
 extern struct PageDirectory _paging_kernel_page_directory;
 
-// ? : Activating paging
+
 
 
 /**
  * Page Directory Entry Flag, only first 8 bit
  * 
- * @param present_bit           Indicate whether this entry is exist or not
+ * @param present_bit       Indicate whether this entry is exist or not
  * @param read_write_bit        
  * @param user_supervisor_bit 
  * @param write_through_bit   
  * @param cache_disable_bit   
  * @param accessed_bit        
  * @param available_bit       
- * @param page_size_bit       
- */
+ * @param page_size_bit  
+ *  */
 struct PageDirectoryEntryFlag {
-    uint8_t present_bit         : 1;
+    uint8_t present_bit        : 1;
     // TODO : Continue. Note: Only first 8 bit flags
     uint8_t write_bit           : 1;
     uint8_t user_bit            : 1;
@@ -80,6 +80,9 @@ struct PageDirectory {
 struct PageDriverState {
     uint8_t *last_available_physical_addr;
 } __attribute__((packed));
+
+
+
 
 
 /**

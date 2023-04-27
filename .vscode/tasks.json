@@ -42,6 +42,11 @@
             }
         },
         {
+            "type": "shell",
+            "label": "Exit QEMU",
+            "command": "pkill -f qemu || test $? -eq 1"
+        },
+        {
             "type": "cppbuild",
             "label": "Build Inserter",
             "command": "make",
@@ -55,11 +60,7 @@
                 "kind": "build",
                 "isDefault": true
             }
-        },
-        {
-            "type": "shell",
-            "label": "Exit QEMU",
-            "command": "pkill -f qemu || test $? -eq 1"
         }
+        
     ],
 }

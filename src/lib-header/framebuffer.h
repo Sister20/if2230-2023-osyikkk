@@ -68,7 +68,7 @@ void framebuffer_clear(void);
  *
  * @param char* str  
  */
-void framebuffer_write_string(char *str);
+void framebuffer_write_string(char *str, uint8_t text_color);
 
 /**
  * @brief scroll framebuffer by offset lines
@@ -77,4 +77,5 @@ void framebuffer_write_string(char *str);
  *  Scroll framebuffer by offset lines
  */
 int framebuffer_scroll_ln(int offset);
+
 #endif
