@@ -77,4 +77,5 @@ void framebuffer_write_string(char *str, uint8_t text_color);
  *  Scroll framebuffer by offset lines
  */
 int framebuffer_scroll_ln(int offset);
+
 #endif
