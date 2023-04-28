@@ -89,7 +89,7 @@ void kernel_setup(void) {
             .buf                   = cbuf,
             .name                  = "kano2\0\0\0",
             .ext                   = "\0\0\0",
-            .parent_cluster_number = 0xA,
+            .parent_cluster_number = 0xB,
             .buffer_size           = 0,
         };
 
@@ -97,7 +97,7 @@ void kernel_setup(void) {
 
         memcpy(request.name, "daijoubu", 8);
         memcpy(request.ext, "uwu", 3);
-        request.parent_cluster_number = 0xB;
+        request.parent_cluster_number = 0xC;
         request.buffer_size = 5*CLUSTER_SIZE;
         write(request);  
         // delete(request);
