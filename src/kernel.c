@@ -28,89 +28,94 @@ void kernel_setup(void) {
     // Allocate first 4 MiB virtual memory
     allocate_single_user_page_frame((uint8_t*) 0);
 
-    struct ClusterBuffer cbuf[5];
-    for (uint32_t i = 0; i < 5; i++)
-        for (uint32_t j = 0; j < CLUSTER_SIZE; j++)
-            cbuf[i].buf[j] = i + 'a';
+    uint8_t first = 1;
 
-    struct FAT32DriverRequest request = {
-        .buf                   = cbuf,
-        .name                  = "ikanaide",
-        .ext                   = "\0\0\0",
-        .parent_cluster_number = ROOT_CLUSTER_NUMBER,
-        .buffer_size           = 0,
-    } ;
-    // struct FAT32DriverRequest request_dir = {
-    //     .buf                   = cbuf,
-    //     .name                  = "nbuna1\0\0",
-    //     .ext                   = "\0\0\0",
-    //     .parent_cluster_number = ROOT_CLUSTER_NUMBER,
-    //     .buffer_size           = 0,
-    // } ;
+    if (first == 1) {
+        struct ClusterBuffer cbuf[5];
+        for (uint32_t i = 0; i < 5; i++)
+            for (uint32_t j = 0; j < CLUSTER_SIZE; j++)
+                cbuf[i].buf[j] = i + 'a';
 
-    read(request);
-    write(request);  // Create folder "ikanaide"
-    memcpy(request.name, "kano1\0\0\0", 8);
-    write(request);  // Create folder "kano1"
-    // memcpy(request.name, "ikanaide", 8);
-    // memcpy(request.ext, "\0\0\0", 3);
-    // delete(request); // Delete first folder, thus creating hole in FS
+        struct FAT32DriverRequest request = {
+            .buf                   = cbuf,
+            .name                  = "ikanaide",
+            .ext                   = "\0\0\0",
+            .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+            .buffer_size           = 0,
+        } ;
+        // struct FAT32DriverRequest request_dir = {
+        //     .buf                   = cbuf,
+        //     .name                  = "nbuna1\0\0",
+        //     .ext                   = "\0\0\0",
+        //     .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+        //     .buffer_size           = 0,
+        // } ;
+
+        read(request);
+        write(request);  // Create folder "ikanaide"
+        memcpy(request.name, "kano1\0\0\0", 8);
+        write(request);  // Create folder "kano1"
+        // memcpy(request.name, "ikanaide", 8);
+        // memcpy(request.ext, "\0\0\0", 3);
+        // delete(request); // Delete first folder, thus creating hole in FS
 
 
 
-    // request.buffer_size = 0;
-    // read(request);
-    // request.buffer_size = CLUSTER_SIZE;
-    // read(request);   // Failed read due not enough buffer size
-    // request.buffer_size = 5*CLUSTER_SIZE;
-    // read(request);   // Success read on file "daijoubu"
-    // memcpy(request.name, "test\0\0\0\0", 8);
-    // read(request);
-    // memcpy(request.name, "\0\0\0\0\0\0\0\0", 8);
-    // read(request);
-    // memcpy(request.name, "daijoubu", 8);
-    // delete(request);
+        // request.buffer_size = 0;
+        // read(request);
+        // request.buffer_size = CLUSTER_SIZE;
+        // read(request);   // Failed read due not enough buffer size
+        // request.buffer_size = 5*CLUSTER_SIZE;
+        // read(request);   // Success read on file "daijoubu"
+        // memcpy(request.name, "test\0\0\0\0", 8);
+        // read(request);
+        // memcpy(request.name, "\0\0\0\0\0\0\0\0", 8);
+        // read(request);
+        // memcpy(request.name, "daijoubu", 8);
+        // delete(request);
 
-    // write(request_dir);
-    // read_directory(request);
-    // read_directory(request_dir);
-    // memcpy(request_dir.name, "nbunan\0\0", 8);
-    // read_directory(request_dir);
-    // memcpy(request_dir.name, "\0\0\0\0\0\0\0\0", 8);
-    // read_directory(request_dir);
-    
-    // Write shell into memory
+        // write(request_dir);
+        // read_directory(request);
+        // read_directory(request_dir);
+        // memcpy(request_dir.name, "nbunan\0\0", 8);
+        // read_directory(request_dir);
+        // memcpy(request_dir.name, "\0\0\0\0\0\0\0\0", 8);
+        // read_directory(request_dir);
+        
+        // Write shell into memory
 
-    
-    struct FAT32DriverRequest request_kano2 = {
-        .buf                   = cbuf,
-        .name                  = "kano2\0\0\0",
-        .ext                   = "\0\0\0",
-        .parent_cluster_number = 0x8,
-        .buffer_size           = 0,
-    };
+        
+        struct FAT32DriverRequest request_kano2 = {
+            .buf                   = cbuf,
+            .name                  = "kano2\0\0\0",
+            .ext                   = "\0\0\0",
+            .parent_cluster_number = 0xA,
+            .buffer_size           = 0,
+        };
 
-    write(request_kano2);
+        write(request_kano2);
 
-    memcpy(request.name, "daijoubu", 8);
-    memcpy(request.ext, "uwu", 3);
-    request.parent_cluster_number = 0x9;
-    request.buffer_size = 5*CLUSTER_SIZE;
-    write(request);  
-    // delete(request);
+        memcpy(request.name, "daijoubu", 8);
+        memcpy(request.ext, "uwu", 3);
+        request.parent_cluster_number = 0xB;
+        request.buffer_size = 5*CLUSTER_SIZE;
+        write(request);  
+        // delete(request);
 
-    // struct ClusterBuffer readcbuf;
-    // read_clusters(&readcbuf, ROOT_CLUSTER_NUMBER+1, 1); 
+        // struct ClusterBuffer readcbuf;
+        // read_clusters(&readcbuf, ROOT_CLUSTER_NUMBER+1, 1); 
 
-    // memcpy(request.name, "daijoubu", 8);
-    // memcpy(request.ext, "owo", 3);
-    // request.buffer_size = 5*CLUSTER_SIZE;
-    // write(request);  // Create fragmented file "daijoubu"
-    // delete(request);
+        // memcpy(request.name, "daijoubu", 8);
+        // memcpy(request.ext, "owo", 3);
+        // request.buffer_size = 5*CLUSTER_SIZE;
+        // write(request);  // Create fragmented file "daijoubu"
+        // delete(request);
 
-    // struct ClusterBuffer readcbuf;
-    // read_clusters(&readcbuf, ROOT_CLUSTER_NUMBER+1, 1); 
-    // If read properly, readcbuf should filled with 'a'
+        // struct ClusterBuffer readcbuf;
+        // read_clusters(&readcbuf, ROOT_CLUSTER_NUMBER+1, 1); 
+        // If read properly, readcbuf should filled with 'a'
+    }
+
 
     struct FAT32DriverRequest request_shell = {
         .buf                   = (uint8_t*) 0,

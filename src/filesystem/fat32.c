@@ -293,6 +293,10 @@ int8_t write(struct FAT32DriverRequest request){
             return error_code = 1;
         }
 
+        struct FAT32DirectoryTable new_table;
+        init_directory_table(&new_table, request.name, i-1);
+        write_clusters(&new_table, i-1, 1);
+
         parent_table.table[idx_empty].cluster_high = (uint16_t) (((i-1) >> 16) & 0xFFFF);
         parent_table.table[idx_empty].cluster_low = (uint16_t) ((i-1) & 0xFFFF);
     } else {

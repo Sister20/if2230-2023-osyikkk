@@ -55,19 +55,21 @@ void activate_keyboard_interrupt(void) {
 
 void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptStack info) {
     if (cpu.eax == 0) {
+        // Read file
         struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
         *((int8_t*) cpu.ecx) = read(request);
     } else if (cpu.eax == 1) {
+        // Read directory
         struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
         *((int8_t*) cpu.ecx) = read_directory(request);    
     } else if (cpu.eax == 2) {
+        // Write file
         struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
         *((int8_t*) cpu.ecx) = write(request);
     } else if (cpu.eax == 3) {
         // Delete file
         struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
         *((int8_t*) cpu.ecx) = delete(request);
-
     } else if (cpu.eax == 4) {
         // Keyboard 
         keyboard_state_activate();
@@ -82,14 +84,16 @@ void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptSta
         // Write string to framebuffer
         framebuffer_write_string((char*) cpu.ebx, (uint8_t) cpu.edx);
     } else if (cpu.eax == 6){
+        // Set cursor position
         struct Cursor c = framebuffer_get_cursor();
         framebuffer_set_cursor(c.row + cpu.ebx, cpu.ecx);
     } else if (cpu.eax == 7){
+        // Clear screen
         clear_screen();
     } else if (cpu.eax == 8){
-
+        // 
     } else if (cpu.eax == 9){
-    
+        // 
     }
 
 }
