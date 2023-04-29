@@ -4,10 +4,12 @@
 /**
  * Unsigned integer representing object size
 */
-typedef unsigned int size_t;
+// typedef unsigned int size_t;
+#define size_t unsigned int // override size_t from stdio.h
 
 /**
- * 32-bit unsigned integer
+ * @brief 
+ * 
  */
 typedef unsigned int uint32_t;
 

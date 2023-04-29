@@ -19,11 +19,11 @@
         {
             "type": "shell",
             "label": "Launch QEMU",
-            "command": "echo Starting QEMU&qemu-system-i386 -s -S -cdrom os2023.iso",
+            "command": "make debug",
             "isBackground": true,
             "dependsOn": "Build OS",
             "options": {
-                "cwd": "${workspaceFolder}/bin"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": {
                 "pattern": [
@@ -45,6 +45,21 @@
             "type": "shell",
             "label": "Exit QEMU",
             "command": "pkill -f qemu || test $? -eq 1"
+        },
+        {
+            "type": "cppbuild",
+            "label": "Build Inserter",
+            "command": "make",
+            "args": [
+                "inserter",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ],
 }

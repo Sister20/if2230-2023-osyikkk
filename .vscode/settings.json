@@ -1,3 +1,23 @@
 {
     "debug.onTaskErrors": "debugAnyway",
+    "files.associations": {
+        "stdmem.h": "c",
+        "fat32.h": "c",
+        "stdtype.h": "c",
+        "portio.h": "c",
+        "cmos.h": "c",
+        "interrupt.h": "c",
+        "atomic": "c",
+        "cstdint": "c",
+        "random": "c",
+        "*.tcc": "c",
+        "gdt.h": "c",
+        "cstdio": "c",
+        "cstring": "c",
+        "typeindex": "c",
+        "typeinfo": "c"
+    },
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "main"
+    ],
 }
