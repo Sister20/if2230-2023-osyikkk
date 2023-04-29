@@ -234,73 +234,136 @@ void remove(char* target_filename, char* target_extension) {
           syscall_user(3, (uint32_t) &request_delete, (uint32_t) &retcode_delete, 0);
           return;
         }
+      } else {
+        
+        if (strcmp(filename, target_filename) == 0) {
+          
+          struct FAT32DriverRequest request_delete = {
+            .parent_cluster_number = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 1],
+          };
+  
+          for (int j = 0; j < 8; j++) {
+            request_delete.name[j] = filename[j];
+          }
+          
+          int8_t retcode_delete;
+          syscall_user(3, (uint32_t) &request_delete, (uint32_t) &retcode_delete, 0);
+        }
       }
 
 
     }
-  }
+  } 
   
   
 }
 
-// TODO: Implement where_is
-// void where_is(uint32_t* path_number_stack, char** path_name_stack, uint8_t stack_length) {
-//   struct FAT32DirectoryTable req_table;
-//   struct FAT32DriverRequest request = {
-//       .buf                   = &req_table,
-//       .ext                   = "\0\0\0",
-//       .buffer_size           = 0,
-//   };
-//   for(int i = 0; i < 8; i++) {
-//     request.name[i] = path_name_stack[stack_length - 1][i];
-//   }
+void where_is(char* name, char* ext, uint32_t* path_number_stack, char path_name_stack[][9], uint8_t stack_length) {
+  struct FAT32DirectoryTable req_table;
+  struct FAT32DriverRequest request = {
+      .buf                   = &req_table,
+      .ext                   = "\0\0\0",
+      .buffer_size           = 0,
+  };
+  for(int i = 0; i < 8; i++) {
+    request.name[i] = path_name_stack[stack_length - 1][i];
+  }
   
-//   if(stack_length <= 1) {
-//     request.parent_cluster_number = ROOT_CLUSTER_NUMBER;
-//   } else {
-//     request.parent_cluster_number = path_number_stack[stack_length - 2];
-//   }
+  if(stack_length <= 1) {
+    request.parent_cluster_number = ROOT_CLUSTER_NUMBER;
+  } else {
+    request.parent_cluster_number = path_number_stack[stack_length - 2];
+  }
 
-//   int8_t retcode;
-//   syscall_user(1, (uint32_t) &request, (uint32_t) &retcode, 0);
+  int8_t retcode;
+  syscall_user(1, (uint32_t) &request, (uint32_t) &retcode, 0);
 
-//   if(retcode != 0) {
-//     syscall_user(5, (uint32_t) "SHELL ERROR\n", 6, DARK_GREEN);
-//   }
+  if(retcode != 0) {
+    syscall_user(5, (uint32_t) "SHELL ERROR\n", 6, DARK_GREEN);
+  }
 
-//   for(uint32_t i = 1; i < CLUSTER_SIZE/sizeof(struct FAT32DirectoryEntry); i++) {
-//     if(current_table.table[i].user_attribute == UATTR_NOT_EMPTY) {
-//       char filename[9];
-//       for(int j = 0; j < 8; j++) {
-//         filename[j] = current_table.table[i].name[j];
-//       }
-//       filename[8] = '\0';
+  for(uint32_t i = 1; i < CLUSTER_SIZE/sizeof(struct FAT32DirectoryEntry); i++) {
+    if(req_table.table[i].user_attribute == UATTR_NOT_EMPTY) {
+      char curr_name[9];
+      for(int j = 0; j < 8; j++) {
+        curr_name[j] = req_table.table[i].name[j];
+      }
+      curr_name[8] = '\0';
 
-//       if(current_table.table[i].attribute != ATTR_ARCHIVE) {
-//         if(strcmp(filename, path_name_stack[stack_length - 1]) == 0) {
-//           char path[256];
+      if(req_table.table[i].attribute != ATTR_ARCHIVE) {
+        // path_number_stack[stack_length] = req_table.table[i].cluster_high << 16 | req_table.table[i].cluster_low;
+        // for(int j = 0; j < 8; j++) {
+        //   path_name_stack[stack_length][j] = curr_name[j];
+        // }
+        stack_length++;
 
-//           for(int i = 0; i < DIR_STACK_LENGTH; i++) {
-//             if(i == 0) {
-//               string_combine(path, path, path);
-//             } else {
-//               string_combine(path, path, path);
-//               string_combine(path, DIR_NAME_STACK[i], path);
-//             }
-//           }
-//           syscall_user(5, (uint32_t) home, KEYBOARD_BUFFER_SIZE, WHITE);
-//         }
+        if(strcmp(curr_name, name) == 0) {
+          char path[256] = "\0";
+
+          for(int j = 0; j < stack_length; j++) {
+            if(j == 0) {
+              string_combine(path, "/\0", path);
+            } else {
+              string_combine(path, "/\0", path);
+              string_combine(path, path_name_stack[j], path);
+            }
+          }
+          syscall_user(5, (uint32_t) path, KEYBOARD_BUFFER_SIZE, WHITE);
+        }
+
+        uint32_t new_number_stack [stack_length + 1];
+        char new_name_stack [stack_length + 1][9];
+        for(int j = 0; j < stack_length - 1; j++) {
+          new_number_stack[j] = path_number_stack[j];
+          for(int k = 0; k < 8; k++) {
+            new_name_stack[j][k] = path_name_stack[j][k];
+          }
+          new_name_stack[j][8] = '\0';
+        }
         
-//         path_number_stack[stack_length] = req_table.table[i].cluster_high << 16 | req_table.table[i].cluster_low;
-//         for(int j = 0; j < 8; j++) {
-//           path_name_stack[stack_length][j] = filename[j];
-//         }
-//         stack_length++;
+        new_number_stack[stack_length-1] = req_table.table[i].cluster_high << 16 | req_table.table[i].cluster_low;
+        for(int j = 0; j < 8; j++) {
+          new_name_stack[stack_length][j] = curr_name[j];
+        }
+        new_name_stack[stack_length-1][8] = '\0';
 
-//       }
-//     }
-//   }
-// }
+        where_is(name, ext, new_number_stack, new_name_stack, stack_length);
+      } else {
+        char curr_ext[4];
+        for(int j = 0; j < 3; j++) {
+          curr_ext[j] = req_table.table[i].ext[j];
+        }
+        curr_ext[3] = '\0';
+
+        if(strcmp(curr_name, name) == 0 && strcmp(curr_ext, ext)) {
+          char path[256];
+
+          for(int j = 0; j < stack_length; j++) {
+            if(j == 0) {
+              string_combine(path, "\0", path);
+            } else {
+              string_combine(path, "\0", path);
+              string_combine(path, path_name_stack[j], path);
+            }
+          }
+
+          char filename[9];
+          for(int j = 0; j < 3; j++) {
+            filename[j] = curr_name[j];
+          }
+          filename[8] = '\0';
+
+          string_combine(path, filename, path);
+
+          string_combine(path, ".\0", path);
+          string_combine(path, ext, path);
+
+          syscall_user(5, (uint32_t) path, KEYBOARD_BUFFER_SIZE, WHITE);
+        }
+      }
+    }
+  }
+}
 
 void clear_screen(){
   syscall_user(7, 0, 0, 0);
@@ -318,7 +381,7 @@ void parse_file_cmd(char* file, char* target_name, char* target_ext) {
     target_name[i] = '\0';
   }
   
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 4; i++) {
     target_ext[i] = '\0';
   }
   uint8_t ext_found = 0;
@@ -358,20 +421,30 @@ void execute_cmd(char *input, char* home) {
       
     }
   }
+  // remove space in the last character
+  int k = KEYBOARD_BUFFER_SIZE - 1;
+  while (input[k] == '\0') {
+    k--;
+  } 
+  while (input[k] == ' ') {
+    input[k] = '\0';
+    k--;
+  }
 
   // array of string input
   char cmd[40][15];
-
-  // 
+  
+  
   int cmd_length = 0;
+  int neff = 0;
 
   // initialize array with \0
   for (int i = 0; i < 40; i++) {
-    for (int j = 0; j < 15; j++) {
-      cmd[i][j] = '\0'; 
+    for (int j = 0; j < 15; j++) { 
+      cmd[i][j] = '\0';  
     }
-  }
-  int neff = 0;
+  }  
+
   int i = 0;
   while (input[i] != '\0') {
     int j = 0;
@@ -382,13 +455,13 @@ void execute_cmd(char *input, char* home) {
     }
     
     cmd[neff][j] = '\0';
-    neff++;
+    neff++; 
 
     if (input[i] == ' ' ) {
       cmd[neff][0] = ' ';
       neff++;
-      cmd_length++;
-      while (input[i] == ' ') {
+      cmd_length++; 
+      while (input[i] == ' ') { 
         i++;
       }
     }
@@ -409,7 +482,7 @@ void execute_cmd(char *input, char* home) {
   // syscall_user(5, (uint32_t) target_ext, KEYBOARD_BUFFER_SIZE, WHITE);
   
   char targetn[9];
-  char targetext[3];
+  char targetext[4];
   char tergetFull[12] = "test\0\0\0\0.exe";
   parse_file_cmd(tergetFull, targetn, targetext);
   
@@ -569,7 +642,7 @@ void execute_cmd(char *input, char* home) {
             full_name[i] = cmd[counterCD][i];
           }
           char file_name[9];
-          char file_ext[3];
+          char file_ext[4];
           parse_file_cmd(full_name, file_name, file_ext);
           // if (cmd[counterCD][8] == '.'){
           //   for (int i=0;i<3;i++){
@@ -762,19 +835,59 @@ void execute_cmd(char *input, char* home) {
 
     } else if(strcmp(cmd[0], "whereis") == 0) {
         // whereis	- Mencari file/folder dengan nama yang sama diseluruh file system
-    
+        uint32_t path_number_stack [2] = {ROOT_CLUSTER_NUMBER};
+        char path_name_stack [2][9] = {"ROOT\0\0\0\0"};
+        uint8_t stack_length = 1;
+
+        char target[15];
+        uint8_t idx;
+        if(cmd[neff][0] == ' ' || cmd[neff][0] == '\0') {
+          idx = neff-1;
+        } else {
+          idx = neff;
+        }
+        
+        for(int i = 0; i < 15; i++) {
+          target[i] = cmd[idx][i];
+        }
+
+        uint8_t counter = 0;
+        while(target[counter] != '\0') {
+          counter++;
+        }
+
+        if(counter <= 8) {
+          char dir_name[9];
+          for(int i = 0; i < 8; i++) {
+            dir_name[i] = target[i];
+          }
+          dir_name[8] = '\0';
+
+          where_is(dir_name, "\0", path_number_stack, path_name_stack, stack_length);
+        } else {
+          char full_target[12];
+          for(int i = 0; i < 12; i++) {
+            full_target[i] = target[i];
+          }
+
+          char target_name[9];
+          char target_ext[4];
+          parse_file_cmd(full_target, target_name, target_ext);
+
+          where_is(target_name, target_ext, path_number_stack, path_name_stack, stack_length);
+        }
     } else if(strcmp(cmd[0], "echo") == 0) {
         // echo : Menuliskan string ke layar 
         syscall_user(5, (uint32_t) cmd[1], 1, WHITE);
         
     } else if (strcmp(cmd[0], "rm") == 0) {
         // rm		- Menghapus suatu file (Folder menjadi bonus)
-      int counterCD = 0;
-      if (cmd[0][1]=='\0'){
+      int counterCD = 2;
+      if (cmd[2][0]=='\0'){
         syscall_user(5, (uint32_t) "rm: missing operand\n", 29, WHITE);
       }
       else{
-        syscall_user(5, (uint32_t) "\nDeleting file: ", KEYBOARD_BUFFER_SIZE, WHITE);
+        // syscall_user(5, (uint32_t) "\nDeleting file: ", KEYBOARD_BUFFER_SIZE, WHITE);
         
         // Change to target directory
         uint32_t DIR_NUMBER_STACK_TEMP [256] = {2};
@@ -786,8 +899,8 @@ void execute_cmd(char *input, char* home) {
             DIR_NAME_STACK_TEMP[i][j] = DIR_NAME_STACK[i][j];
           }
         }
-        if (cmd[2][0] != '\0'){
-          counterCD = 1;
+        if (cmd[3][0] != '\0'){
+          counterCD = 2;
           while (cmd[counterCD+1][0] != '\0') {
             if (cmd[counterCD][0] == '.') {
               if (cmd[counterCD][1] == '.') {
@@ -811,8 +924,9 @@ void execute_cmd(char *input, char* home) {
         }
 
         char target_name[9];
-        char target_ext[3];
+        char target_ext[4];
         parse_file_cmd(full_target, target_name, target_ext);
+        
         remove(target_name, target_ext);
 
         // change to previous stack
@@ -857,6 +971,9 @@ int main(void) {
     print_home(home);
 
     char buf[KEYBOARD_BUFFER_SIZE];
+    for (int i = 0; i < KEYBOARD_BUFFER_SIZE; i++) {
+        buf[i] = '\0';
+    }
     while (TRUE) {
         syscall_user(4, (uint32_t) buf, KEYBOARD_BUFFER_SIZE, 0); 
         execute_cmd(buf, home);
