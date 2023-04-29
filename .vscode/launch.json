@@ -40,7 +40,6 @@
                     "description": "Use hexadecimal output"
                 }
             ],
-            
             "avoidWindowsConsoleRedirection": true
         },
         {
@@ -48,7 +47,11 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/inserter",
-            "args": ["shell", "2", "storage.bin"],
+            "args": [
+                "shell",
+                "2",
+                "storage.bin"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",
             "environment": [],
@@ -100,6 +103,6 @@
                     "description": "Use hexadecimal output"
                 },
             ]
-        }        
+        }
     ]
 }
