@@ -175,6 +175,10 @@ void list_current_directory() {
   }
 }
 
+// void get_src_request(char* target_filename, char* target_extension) {
+
+// }
+
 void remove(char* target_filename, char* target_extension) {
   struct FAT32DirectoryTable current_table;
   struct FAT32DriverRequest request = {
@@ -251,6 +255,10 @@ void remove(char* target_filename, char* target_extension) {
           int8_t retcode_delete;
           syscall_user(3, (uint32_t)&request_delete, (uint32_t)&retcode_delete,
                        0);
+          if (retcode_delete == 2) {
+            syscall_user(5, (uint32_t) "rm: Cannot delete filled directory.\n", KEYBOARD_BUFFER_SIZE, WHITE);
+          }
+          return;
         }
       }
     }
@@ -677,21 +685,6 @@ void execute_cmd(char* input, char* home) {
           char file_name[9];
           char file_ext[4];
           parse_file_cmd(full_name, file_name, file_ext);
-          // if (cmd[counterCD][8] == '.'){
-          //   for (int i=0;i<3;i++){
-          //     file_ext[i] = cmd[counterCD][i+9];
-          //   }
-          // }
-          // else{
-          //   syscall_user(5, (uint32_t) "cat: invalid file name\n", 24,
-          //   WHITE);
-          // }
-          // if (cmd[counterCD][12] != '\0' || cmd[counterCD][12] != ' '){
-          //   syscall_user(5, (uint32_t) "cat: invalid file name\n", 24,
-          //   WHITE);
-          // }
-
-          // parse_file_cmd(full_name, file_name, file_ext);
 
           // cat file in relative path
           struct FAT32DirectoryTable current_table;
@@ -880,72 +873,12 @@ void execute_cmd(char* input, char* home) {
         } else if (cmd_length > 2) {
           syscall_user(5, (uint32_t) "mv: too many arguments\n", 24, WHITE);
         } else {
-        int counterCD = 2;
-        // Change to target directory
-        // read source directory relative path
-        uint32_t DIR_NUMBER_STACK_TEMP[256] = {2};
-        char DIR_NAME_STACK_TEMP[256][9] = {"ROOT\0\0\0\0\0"};
-        uint8_t DIR_STACK_LENGTH_TEMP = DIR_STACK_LENGTH;
-        for (int i = 0; i < DIR_STACK_LENGTH + 1; i++) {
-          DIR_NUMBER_STACK_TEMP[i] = DIR_NUMBER_STACK[i];
-          for (int j = 0; j < 9; j++) {
-            DIR_NAME_STACK_TEMP[i][j] = DIR_NAME_STACK[i][j];
-          }
-        }
-        if (cmd[3][0] != '\0') {
-          counterCD = 2;
-          while (cmd[counterCD + 1][0] != ' ') {
-            if (cmd[counterCD][0] == '.') {
-              if (cmd[counterCD][1] == '.') {
-                // cd ..
-                change_directory("..");
-              } else {
-                // cd .
-                change_directory(".");
-              }
-            } else {
-              // cd <folder>
-              change_directory(cmd[counterCD]);
-            }
-            counterCD++;
-          }
-        }
-
-        // MV
-        // parse file name
-        char full_name[12];
-        for (int i = 0; i < 12; i++) {
-          full_name[i] = cmd[counterCD][i];
-        }
-        syscall_user(5, (uint32_t) full_name, 12, WHITE);
-        char file_name[9];
-        char file_ext[4];
-        parse_file_cmd(full_name, file_name, file_ext);
-        
-
-        //....
-
-
-
-        // change to previous stack
-        for (int i = 0; i < DIR_STACK_LENGTH_TEMP; i++) {
-          DIR_NUMBER_STACK[i] = DIR_NUMBER_STACK_TEMP[i];
-          for (int j = 0; j < 9; j++) {
-            DIR_NAME_STACK[i][j] = DIR_NAME_STACK_TEMP[i][j];
-          }
-        }
-        for (int i = DIR_STACK_LENGTH_TEMP;
-             i < (DIR_STACK_LENGTH_TEMP + counterCD); i++) {
-          DIR_NUMBER_STACK[i] = 0;
-          for (int j = 0; j < 9; j++) {
-            DIR_NAME_STACK[i][j] = '\0';
-          }
-        }
-        DIR_STACK_LENGTH = DIR_STACK_LENGTH_TEMP;
-
-
-        // read destination directory relative path
-        DIR_STACK_LENGTH_TEMP = DIR_STACK_LENGTH;
+          int counterCD = 2;
+          // Change to target directory
+          // read source directory relative path
+          uint32_t DIR_NUMBER_STACK_TEMP[256] = {2};
+          char DIR_NAME_STACK_TEMP[256][9] = {"ROOT\0\0\0\0\0"};
+          uint8_t DIR_STACK_LENGTH_TEMP = DIR_STACK_LENGTH;
           for (int i = 0; i < DIR_STACK_LENGTH + 1; i++) {
             DIR_NUMBER_STACK_TEMP[i] = DIR_NUMBER_STACK[i];
             for (int j = 0; j < 9; j++) {
@@ -953,8 +886,127 @@ void execute_cmd(char* input, char* home) {
             }
           }
           if (cmd[3][0] != '\0') {
-            counterCD +=2;
-            while (cmd[counterCD + 1][0] != '\0' && cmd[counterCD][0] != ' ') {
+            counterCD = 2;
+            while (cmd[counterCD + 1][0] != ' ') {
+              if (cmd[counterCD][0] == '.') {
+                if (cmd[counterCD][1] == '.') {
+                  // cd ..
+                  change_directory("..");
+                } else {
+                  // cd .
+                  change_directory(".");
+                }
+              } else {
+                // cd <folder>
+                change_directory(cmd[counterCD]);
+              }
+              counterCD++;
+            }
+          }
+
+          // MV
+          // parse file name
+          char full_name[12];
+          for (int i = 0; i < 12; i++) {
+            full_name[i] = cmd[counterCD][i];
+          }
+          syscall_user(5, (uint32_t) full_name, 12, WHITE);
+
+          // Search source request
+          char target_filename_src[9];
+          char target_ext_src[4];
+          parse_file_cmd(full_name, target_filename_src, target_ext_src);
+          
+          uint32_t src_idx = 0x800; // if unchanged, file not found
+          struct FAT32DirectoryTable src_table;
+          struct FAT32DriverRequest src_request = {
+              .buf = &src_table,
+              .ext = "\0\0\0",
+              .buffer_size = 0,
+          };
+
+          for (int i = 0; i < 8; i++) {
+            src_request.name[i] = DIR_NAME_STACK[DIR_STACK_LENGTH - 1][i];
+          }
+
+          if (DIR_STACK_LENGTH <= 1) {
+            src_request.parent_cluster_number = ROOT_CLUSTER_NUMBER;
+          } else {
+            src_request.parent_cluster_number = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 2];
+          }
+
+          int8_t src_retcode;
+          syscall_user(1, (uint32_t)&src_request, (uint32_t)&src_retcode, 0);
+
+          if (src_retcode != 0) {
+            syscall_user(5, (uint32_t) "SHELL ERROR\n", 15, DARK_GREEN);
+            return;
+          }
+
+          for (uint32_t i = 1; i < CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry);
+              i++) {
+            if (src_table.table[i].user_attribute == UATTR_NOT_EMPTY) {
+              char filename[9];
+              for (int j = 0; j < 8; j++) {
+                filename[j] = src_table.table[i].name[j];
+              }
+              filename[8] = '\0';
+
+              if (src_table.table[i].attribute == ATTR_ARCHIVE) {
+                char ext_name[4] = "\0\0\0\0";
+                if (src_table.table[i].ext[0] != '\0') {
+                  for (int j = 0; j < 3; j++) {
+                    ext_name[j] = src_table.table[i].ext[j];
+                  }
+                  ext_name[3] = '\0';
+                }
+
+                if (strcmp(filename, target_filename_src) == 0 &&
+                    strcmp(ext_name, target_ext_src) == 0) {
+                  src_idx = i;
+                }
+              } else {
+                if (strcmp(filename, target_filename_src) == 0) {
+                  src_idx = i;
+                }
+              }
+            }
+          }
+
+          if (src_idx == 0x800) {
+            syscall_user(5, (uint32_t) "mv: source not found\n", KEYBOARD_BUFFER_SIZE, WHITE);
+            return;
+          }
+          
+          
+          // change to previous stack
+          for (int i = 0; i < DIR_STACK_LENGTH_TEMP; i++) {
+            DIR_NUMBER_STACK[i] = DIR_NUMBER_STACK_TEMP[i];
+            for (int j = 0; j < 9; j++) {
+              DIR_NAME_STACK[i][j] = DIR_NAME_STACK_TEMP[i][j];
+            }
+          }
+          for (int i = DIR_STACK_LENGTH_TEMP;
+              i < (DIR_STACK_LENGTH_TEMP + counterCD); i++) {
+            DIR_NUMBER_STACK[i] = 0;
+            for (int j = 0; j < 9; j++) {
+              DIR_NAME_STACK[i][j] = '\0';
+            }
+          }
+          DIR_STACK_LENGTH = DIR_STACK_LENGTH_TEMP;
+
+
+          // read destination directory relative path
+          DIR_STACK_LENGTH_TEMP = DIR_STACK_LENGTH;
+          for (int i = 0; i < DIR_STACK_LENGTH + 1; i++) {
+            DIR_NUMBER_STACK_TEMP[i] = DIR_NUMBER_STACK[i];
+            for (int j = 0; j < 9; j++) {
+              DIR_NAME_STACK_TEMP[i][j] = DIR_NAME_STACK[i][j];
+            }
+          }
+          if (cmd[3][0] != '\0') {
+            counterCD += 2;
+            while (cmd[counterCD][0] != '\0' && cmd[counterCD][0] != ' ') {
               if (cmd[counterCD][0] == '.') {
                 if (cmd[counterCD][1] == '.') {
                   change_directory("..");
@@ -968,18 +1020,46 @@ void execute_cmd(char* input, char* home) {
             }
           }
 
-          char full_name_2[12];
-          for (int i = 0; i < 12; i++) {
-            full_name_2[i] = cmd[counterCD][i];
+          char full_name_2[8];
+          for (int i = 0; i < 8; i++) {
+            full_name_2[i] = DIR_NAME_STACK[DIR_STACK_LENGTH - 1][i];
           }
           // enter
           syscall_user(5, (uint32_t) "\n", 1, WHITE);
           syscall_user(5, (uint32_t) full_name_2, 12, WHITE);
 
-          // MV
-          // move file to new directory
+          // Search destination request
+          char target_filename_dest[9];
+          char target_ext_dest[4];
+          parse_file_cmd(full_name_2, target_filename_dest, target_ext_dest);
 
-          
+          struct FAT32DirectoryTable dest_table;
+          struct FAT32DriverRequest dest_request = {
+              .buf = &dest_table,
+              .ext = "\0\0\0",
+              .buffer_size = 0,
+          };
+
+          for (int i = 0; i < 8; i++) {
+            dest_request.name[i] = DIR_NAME_STACK[DIR_STACK_LENGTH - 1][i];
+          }
+
+          if (DIR_STACK_LENGTH <= 1) {
+            dest_request.parent_cluster_number = ROOT_CLUSTER_NUMBER;
+          } else {
+            dest_request.parent_cluster_number = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 2];
+          }
+
+          int8_t dest_retcode;
+          syscall_user(1, (uint32_t)&dest_request, (uint32_t)&dest_retcode, 0);
+
+          if (dest_retcode != 0) {
+            syscall_user(5, (uint32_t) "SHELL ERROR\n", 15, DARK_GREEN);
+            return;
+          }
+
+          // Move
+          syscall_user(8, (uint32_t)&src_table, (uint32_t)&dest_table, (uint32_t) src_idx);
 
           // change to previous stack
           for (int i = 0; i < DIR_STACK_LENGTH_TEMP; i++) {
