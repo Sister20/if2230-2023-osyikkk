@@ -918,9 +918,9 @@ void execute_cmd(char* input, char* home) {
           full_name[i] = cmd[counterCD][i];
         }
         syscall_user(5, (uint32_t) full_name, 12, WHITE);
-        // char file_name[9];
-        // char file_ext[4];
-        // parse_file_cmd(full_name, file_name, file_ext);
+        char file_name[9];
+        char file_ext[4];
+        parse_file_cmd(full_name, file_name, file_ext);
         
 
         //....
@@ -953,28 +953,49 @@ void execute_cmd(char* input, char* home) {
             }
           }
           if (cmd[3][0] != '\0') {
-            counterCD++;
-            while (cmd[counterCD + 1][0] != '\0') {
+            counterCD +=2;
+            while (cmd[counterCD + 1][0] != '\0' && cmd[counterCD][0] != ' ') {
               if (cmd[counterCD][0] == '.') {
                 if (cmd[counterCD][1] == '.') {
-                  // cd ..
                   change_directory("..");
                 } else {
-                  // cd .
                   change_directory(".");
                 }
               } else {
-                // cd <folder>
                 change_directory(cmd[counterCD]);
               }
               counterCD++;
             }
           }
 
+          char full_name_2[12];
           for (int i = 0; i < 12; i++) {
-            full_name[i] = cmd[counterCD][i];
+            full_name_2[i] = cmd[counterCD][i];
           }
-          syscall_user(5, (uint32_t) full_name, 12, WHITE);
+          // enter
+          syscall_user(5, (uint32_t) "\n", 1, WHITE);
+          syscall_user(5, (uint32_t) full_name_2, 12, WHITE);
+
+          // MV
+          // move file to new directory
+
+          
+
+          // change to previous stack
+          for (int i = 0; i < DIR_STACK_LENGTH_TEMP; i++) {
+            DIR_NUMBER_STACK[i] = DIR_NUMBER_STACK_TEMP[i];
+            for (int j = 0; j < 9; j++) {
+              DIR_NAME_STACK[i][j] = DIR_NAME_STACK_TEMP[i][j];
+            }
+          }
+          for (int i = DIR_STACK_LENGTH_TEMP;
+              i < (DIR_STACK_LENGTH_TEMP + counterCD); i++) {
+            DIR_NUMBER_STACK[i] = 0;
+            for (int j = 0; j < 9; j++) {
+              DIR_NAME_STACK[i][j] = '\0';
+            }
+          }
+          DIR_STACK_LENGTH = DIR_STACK_LENGTH_TEMP;
         }
 
 
