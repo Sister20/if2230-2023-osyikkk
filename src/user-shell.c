@@ -67,7 +67,7 @@ void print_home() {
   for (int i = 0; i < DIR_STACK_LENGTH; i++) {
     if (i == 0) {
       string_combine(base, path, home);
-    } else if (i < DIR_STACK_LENGTH -1 ){
+    } else if (i < DIR_STACK_LENGTH - 1) {
       string_combine(home, DIR_NAME_STACK[i], home);
       string_combine(home, path, home);
     } else {
@@ -363,6 +363,37 @@ void where_is(char* name, char* ext, uint32_t* path_number_stack,
         }
       }
     }
+  }
+}
+
+void copy_file(char* name, char* ext, uint32_t size, uint32_t parent_cluster,
+               uint32_t dest_cluster) {
+  struct ClusterBuffer cl[size / CLUSTER_SIZE];
+  struct FAT32DriverRequest request = {
+      .buf = &cl,
+      .parent_cluster_number = parent_cluster,
+      .buffer_size = size,
+  };
+  for (int i = 0; i < 8; i++) {
+    request.name[i] = name[i];
+  }
+  for (int i = 0; i < 3; i++) {
+    request.ext[i] = ext[i];
+  }
+
+  syscall_user(0, (uint32_t)&request, (uint32_t)&retcode, 0);
+  if (retcode != 0) {
+    syscall_user(5, (uint32_t) "cp : No such file or directory\n", 50,
+                 DARK_GREEN);
+    return;
+  }
+
+  request.parent_cluster_number = dest_cluster;
+  syscall_user(2, (uint32_t)&request, (uint32_t)&retcode, 0);
+
+  if (retcode != 0) {
+    syscall_user(5, (uint32_t) "cp : Fail to copy file\n", 50, DARK_GREEN);
+    return;
   }
 }
 
@@ -874,12 +905,12 @@ void execute_cmd(char* input, char* home) {
       }
 
     } else if (strcmp(cmd[0], "mv") == 0) {
-        // mv : Memindah dan merename lokasi file/folder
-        if (cmd_length <= 1) {
-          syscall_user(5, (uint32_t) "mv: missing file operand\n", 26, WHITE);
-        } else if (cmd_length > 2) {
-          syscall_user(5, (uint32_t) "mv: too many arguments\n", 24, WHITE);
-        } else {
+      // mv : Memindah dan merename lokasi file/folder
+      if (cmd_length <= 1) {
+        syscall_user(5, (uint32_t) "mv: missing file operand\n", 26, WHITE);
+      } else if (cmd_length > 2) {
+        syscall_user(5, (uint32_t) "mv: too many arguments\n", 24, WHITE);
+      } else {
         int counterCD = 2;
         // Change to target directory
         // read source directory relative path
@@ -917,15 +948,12 @@ void execute_cmd(char* input, char* home) {
         for (int i = 0; i < 12; i++) {
           full_name[i] = cmd[counterCD][i];
         }
-        syscall_user(5, (uint32_t) full_name, 12, WHITE);
+        syscall_user(5, (uint32_t)full_name, 12, WHITE);
         // char file_name[9];
         // char file_ext[4];
         // parse_file_cmd(full_name, file_name, file_ext);
-        
 
         //....
-
-
 
         // change to previous stack
         for (int i = 0; i < DIR_STACK_LENGTH_TEMP; i++) {
@@ -943,42 +971,40 @@ void execute_cmd(char* input, char* home) {
         }
         DIR_STACK_LENGTH = DIR_STACK_LENGTH_TEMP;
 
-
         // read destination directory relative path
         DIR_STACK_LENGTH_TEMP = DIR_STACK_LENGTH;
-          for (int i = 0; i < DIR_STACK_LENGTH + 1; i++) {
-            DIR_NUMBER_STACK_TEMP[i] = DIR_NUMBER_STACK[i];
-            for (int j = 0; j < 9; j++) {
-              DIR_NAME_STACK_TEMP[i][j] = DIR_NAME_STACK[i][j];
-            }
+        for (int i = 0; i < DIR_STACK_LENGTH + 1; i++) {
+          DIR_NUMBER_STACK_TEMP[i] = DIR_NUMBER_STACK[i];
+          for (int j = 0; j < 9; j++) {
+            DIR_NAME_STACK_TEMP[i][j] = DIR_NAME_STACK[i][j];
           }
-          if (cmd[3][0] != '\0') {
-            counterCD++;
-            while (cmd[counterCD + 1][0] != '\0') {
-              if (cmd[counterCD][0] == '.') {
-                if (cmd[counterCD][1] == '.') {
-                  // cd ..
-                  change_directory("..");
-                } else {
-                  // cd .
-                  change_directory(".");
-                }
+        }
+        if (cmd[3][0] != '\0') {
+          counterCD++;
+          while (cmd[counterCD + 1][0] != '\0') {
+            if (cmd[counterCD][0] == '.') {
+              if (cmd[counterCD][1] == '.') {
+                // cd ..
+                change_directory("..");
               } else {
-                // cd <folder>
-                change_directory(cmd[counterCD]);
+                // cd .
+                change_directory(".");
               }
-              counterCD++;
+            } else {
+              // cd <folder>
+              change_directory(cmd[counterCD]);
             }
+            counterCD++;
           }
-
-          for (int i = 0; i < 12; i++) {
-            full_name[i] = cmd[counterCD][i];
-          }
-          syscall_user(5, (uint32_t) full_name, 12, WHITE);
         }
 
+        for (int i = 0; i < 12; i++) {
+          full_name[i] = cmd[counterCD][i];
+        }
+        syscall_user(5, (uint32_t)full_name, 12, WHITE);
+      }
 
-      } else if (strcmp(cmd[0], "whereis") == 0) {
+    } else if (strcmp(cmd[0], "whereis") == 0) {
       // whereis	- Mencari file/folder dengan nama yang sama diseluruh
       // file system format : whereis <nama file/folder>
       if (cmd_length == 0) {
@@ -1111,7 +1137,6 @@ void execute_cmd(char* input, char* home) {
         }
         DIR_STACK_LENGTH = DIR_STACK_LENGTH_TEMP;
       }
-
 
     } else {
       syscall_user(5, (uint32_t) "\nCommand not found: ", KEYBOARD_BUFFER_SIZE,
