@@ -381,7 +381,9 @@ void copy_file(char* name, char* ext, uint32_t size, uint32_t parent_cluster,
     request.ext[i] = ext[i];
   }
 
+  uint8_t retcode;
   syscall_user(0, (uint32_t)&request, (uint32_t)&retcode, 0);
+
   if (retcode != 0) {
     syscall_user(5, (uint32_t) "cp : No such file or directory\n", 50,
                  DARK_GREEN);
@@ -823,88 +825,169 @@ void execute_cmd(char* input, char* home) {
       }
 
     } else if (strcmp(cmd[0], "cp") == 0) {
-      // cp : Mengcopy suatu file (Folder menjadi bonus)
-      // format : cp <file> <tujuan>
-
-      // cek apakah ada argumen dan ada tepat 2 argumen
-      if (cmd_length <= 1) {
-        syscall_user(5, (uint32_t) "cp: missing file operand\n", 26, WHITE);
-      } else if (cmd_length > 2) {
-        syscall_user(5, (uint32_t) "cp: too many arguments\n", 24, WHITE);
-      } else {
-        // cek apakah file yang mau dicopy ada
-        // ?: parent cluster yang file
-        struct FAT32DirectoryTable current_table;
-        struct FAT32DriverRequest request = {
-            .buf = &current_table,
-            .ext = "\0\0\0",
-            .parent_cluster_number = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 1],
-            .buffer_size = 0,
-        };
-
-        for (int i = 0; i < 8; i++) {
-          request.name[i] = cmd[1][i];
+      int counterCD = 2;
+      // Change to target directory
+      // read source directory relative path
+      uint32_t DIR_NUMBER_STACK_TEMP[256] = {2};
+      char DIR_NAME_STACK_TEMP[256][9] = {"ROOT\0\0\0\0\0"};
+      uint8_t DIR_STACK_LENGTH_TEMP = DIR_STACK_LENGTH;
+      for (int i = 0; i < DIR_STACK_LENGTH + 1; i++) {
+        DIR_NUMBER_STACK_TEMP[i] = DIR_NUMBER_STACK[i];
+        for (int j = 0; j < 9; j++) {
+          DIR_NAME_STACK_TEMP[i][j] = DIR_NAME_STACK[i][j];
         }
-        for (int i = 0; i < 3; i++) {
-          request.ext[i] = cmd[1][i + 9];
-        }
-
-        int8_t retcode;
-        syscall_user(1, (uint32_t)&request, (uint32_t)&retcode, 0);
-
-        if (retcode != 0) {
-          // file
-          syscall_user(5, (uint32_t) "cp: No such file or directory2\n",
-                       KEYBOARD_BUFFER_SIZE, WHITE);
-        } else {
-          // file founded
-          // check if directory does exist
-          struct FAT32DirectoryTable current_table2;
-
-          struct FAT32DriverRequest request2 = {
-              .buf = &current_table2,
-              .ext = "\0\0\0",
-              .parent_cluster_number = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 1],
-              .buffer_size = 0,
-          };
-
-          for (int i = 0; i < 8; i++) {
-            request2.name[i] = cmd[2][i];
-          }
-          for (int i = 0; i < 3; i++) {
-            request2.ext[i] = cmd[2][i + 9];
-          }
-
-          int8_t retcode2;
-          syscall_user(1, (uint32_t)&request2, (uint32_t)&retcode2, 0);
-
-          if (retcode2 != 0) {
-            syscall_user(5, (uint32_t) "cp: No such file or directory3\n",
-                         KEYBOARD_BUFFER_SIZE, WHITE);
-          } else {
-            // folder founded
-            // copy all content of file to folder
-            // get file size
-
-            // request.parent_cluster_number = cluster_number;
-            // request.buffer_size =
-
-            syscall_user(2, (uint32_t)&request, (uint32_t)&retcode, 0);
-
-            // check if error or filename is same
-            if (retcode != 0) {
-              syscall_user(5, (uint32_t) "cp: No such file or directory4\n",
-                           KEYBOARD_BUFFER_SIZE, WHITE);
+      }
+      if (cmd[3][0] != '\0') {
+        counterCD = 2;
+        while (cmd[counterCD + 1][0] != ' ') {
+          if (cmd[counterCD][0] == '.') {
+            if (cmd[counterCD][1] == '.') {
+              // cd ..
+              change_directory("..");
             } else {
-              ;
-              // success
-              // syscall_user(5, (uint32_t) "cp: Success\n", 13, WHITE);
+              // cd .
+              change_directory(".");
             }
+          } else {
+            // cd <folder>
+            change_directory(cmd[counterCD]);
           }
+          counterCD++;
         }
       }
 
-    } else if (strcmp(cmd[0], "mv") == 0) {
+      // MV
+      // parse file name
+      char full_name[12];
+      for (int i = 0; i < 12; i++) {
+        full_name[i] = cmd[counterCD][i];
+      }
+      syscall_user(5, (uint32_t)full_name, 12, WHITE);
+      char file_name[9];
+      char file_ext[4];
+      parse_file_cmd(full_name, file_name, file_ext);
+
+      struct FAT32DirectoryTable parent_table;
+      struct FAT32DriverRequest request = {
+          .buf = &parent_table,
+          .ext = "\0\0\0",
+          .buffer_size = 0,
+      };
+
+      for (int i = 0; i < 8; i++) {
+        request.name[i] = DIR_NAME_STACK[DIR_STACK_LENGTH - 1][i];
+      }
+
+      if (DIR_STACK_LENGTH <= 1) {
+        request.parent_cluster_number = ROOT_CLUSTER_NUMBER;
+      } else {
+        request.parent_cluster_number = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 2];
+      }
+
+      int8_t retcode;
+      syscall_user(1, (uint32_t)&request, (uint32_t)&retcode, 0);
+
+      if (retcode != 0) {
+        syscall_user(5, (uint32_t) "INVALID DIRECTORY\n", 6, DARK_GREEN);
+      }
+
+      uint32_t filesize;
+
+      for (uint32_t i = 1;
+           i < CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry); i++) {
+        char curr_name[9];
+        for (int j = 0; j < 8; j++) {
+          curr_name[j] = parent_table.table[i].name[j];
+        }
+        curr_name[8] = '\0';
+
+        if (strcmp(curr_name, file_name) == 0) {
+          filesize = parent_table.table[i].filesize;
+          break;
+        }
+      }
+
+      uint32_t parent_cluster = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 1];
+
+      //....
+
+      // change to previous stack
+      for (int i = 0; i < DIR_STACK_LENGTH_TEMP; i++) {
+        DIR_NUMBER_STACK[i] = DIR_NUMBER_STACK_TEMP[i];
+        for (int j = 0; j < 9; j++) {
+          DIR_NAME_STACK[i][j] = DIR_NAME_STACK_TEMP[i][j];
+        }
+      }
+      for (int i = DIR_STACK_LENGTH_TEMP;
+           i < (DIR_STACK_LENGTH_TEMP + counterCD); i++) {
+        DIR_NUMBER_STACK[i] = 0;
+        for (int j = 0; j < 9; j++) {
+          DIR_NAME_STACK[i][j] = '\0';
+        }
+      }
+      DIR_STACK_LENGTH = DIR_STACK_LENGTH_TEMP;
+
+      // read destination directory relative path
+      DIR_STACK_LENGTH_TEMP = DIR_STACK_LENGTH;
+      for (int i = 0; i < DIR_STACK_LENGTH + 1; i++) {
+        DIR_NUMBER_STACK_TEMP[i] = DIR_NUMBER_STACK[i];
+        for (int j = 0; j < 9; j++) {
+          DIR_NAME_STACK_TEMP[i][j] = DIR_NAME_STACK[i][j];
+        }
+      }
+      if (cmd[3][0] != '\0') {
+        counterCD += 2;
+        while (cmd[counterCD][0] != '\0' && cmd[counterCD][0] != ' ') {
+          if (cmd[counterCD][0] == '.') {
+            if (cmd[counterCD][1] == '.') {
+              change_directory("..");
+            } else {
+              change_directory(".");
+            }
+          } else {
+            change_directory(cmd[counterCD]);
+          }
+          counterCD++;
+        }
+      }
+
+      char full_name_2[12];
+      for (int i = 0; i < 12; i++) {
+        full_name_2[i] = cmd[counterCD - 1][i];
+      }
+      // enter
+      syscall_user(5, (uint32_t) "\n", 1, WHITE);
+      syscall_user(5, (uint32_t)full_name_2, 12, WHITE);
+
+      uint32_t dest_cluster = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 1];
+
+      copy_file(file_name, file_ext, filesize, parent_cluster, dest_cluster);
+
+      // MV
+      // move file to new directory
+
+      // change to previous stack
+      for (int i = 0; i < DIR_STACK_LENGTH_TEMP; i++) {
+        DIR_NUMBER_STACK[i] = DIR_NUMBER_STACK_TEMP[i];
+        for (int j = 0; j < 9; j++) {
+          DIR_NAME_STACK[i][j] = DIR_NAME_STACK_TEMP[i][j];
+        }
+      }
+      for (int i = DIR_STACK_LENGTH_TEMP;
+           i < (DIR_STACK_LENGTH_TEMP + counterCD); i++) {
+        DIR_NUMBER_STACK[i] = 0;
+        for (int j = 0; j < 9; j++) {
+          DIR_NAME_STACK[i][j] = '\0';
+        }
+      }
+      DIR_STACK_LENGTH = DIR_STACK_LENGTH_TEMP;
+    }
+
+    // for (int i = 0; i < 12; i++) {
+    //   full_name[i] = cmd[counterCD][i];
+    // }
+
+    else if (strcmp(cmd[0], "mv") == 0) {
       // mv : Memindah dan merename lokasi file/folder
       if (cmd_length <= 1) {
         syscall_user(5, (uint32_t) "mv: missing file operand\n", 26, WHITE);
@@ -991,10 +1074,6 @@ void execute_cmd(char* input, char* home) {
                 change_directory(cmd[counterCD]);
               }
             }
-            else {
-              // cd <folder>
-              change_directory(cmd[counterCD]);
-            }
             counterCD++;
           }
 
@@ -1031,7 +1110,6 @@ void execute_cmd(char* input, char* home) {
         }
         syscall_user(5, (uint32_t)full_name, 12, WHITE);
       }
-
     } else if (strcmp(cmd[0], "whereis") == 0) {
       // whereis	- Mencari file/folder dengan nama yang sama diseluruh
       // file system format : whereis <nama file/folder>
@@ -1165,7 +1243,6 @@ void execute_cmd(char* input, char* home) {
         }
         DIR_STACK_LENGTH = DIR_STACK_LENGTH_TEMP;
       }
-
     } else {
       syscall_user(5, (uint32_t) "\nCommand not found: ", KEYBOARD_BUFFER_SIZE,
                    DARK_RED);
