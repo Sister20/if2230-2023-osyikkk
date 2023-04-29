@@ -13,26 +13,24 @@ Tugas IF2230 - Sistem Operasi 2023 Tahun 2022/2023
 * [How to Run](#How-to-Run)
 * [Project Status](#project-status)
 * [Room for Improvement](#room-for-improvement)
-* [Division of tasks](#division-of-tasks)
-<!-- * [Penjelasan Singkat Algoritma](#Penjelasan-Singkat-Algoritma) -->
-
+* [Authors](#authors)
 
 ## General Information
-Operating System
+Operating System 32 bit yang dibuat menggunakan bahasa assembly dan C. 
+Program ini dapat menjalankan beberapa perintah seperti ls, cat, rm, 
+cp, mkdir, dan lain-lain seperti shell pada umumnya.
 
 
 ## Technologies Used
 - Qemu
-- NASM
+- Assembly
 - C
 
-<!-- ## Penjelasan Singkat Algoritma
-*  -->
 ## Features
 - Implementasi dari mata kuliah Sistem Operasi 
 
 ## Screenshots
-![Example screenshot](./doc/OS.png)
+![Example screenshot](./other/example.png)
 
 ## Installation
 Clone the repo
@@ -42,21 +40,23 @@ git clone https://github.com/Sister20/if2230-2023-osyikkk.git
 
 ## Usage
 ```sh
+make first
 make run
 ```
 
+
 ## Project Status
-Project is: _not complete_ 
+Project is: _complete_ 
 
 
 ## Room for Improvement
 
 Room for improvement:
-- speed up the code
+- speed up algorithm
 - add more features
 
 
-## Division of tasks
+## Authors
 [13521043 Nigel Sahl](https://github.com/NerbFox)    
 [13521087 Razzan Daksana Yoni](https://github.com/razzanYoni)        
 [13521149 Rava Maulana Azzikri](https://github.com/RMA1403)       
