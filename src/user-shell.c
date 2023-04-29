@@ -337,6 +337,7 @@ void where_is(char* name, char* ext, uint32_t* path_number_stack,
 
         if (strcmp(curr_name, name) == 0 && strcmp(curr_ext, ext) == 0) {
           char path[256];
+          path[0] = '\0';
 
           for (int j = 0; j < stack_length; j++) {
             if (j == 0) {
@@ -398,6 +399,8 @@ void copy_file(char* name, char* ext, uint32_t size, uint32_t parent_cluster,
     return;
   }
 }
+
+// void copy_folder(uint32_t current_cluster, uint32_t dest_cluster)
 
 void clear_screen() {
   syscall_user(7, 0, 0, 0);
