@@ -408,6 +408,64 @@ void copy_file(char* name, char* ext, uint32_t size, uint32_t parent_cluster,
   }
 }
 
+void copy_folder(char* name, uint32_t parent_cluster, uint32_t dest_cluster) {
+  struct FAT32DirectoryTable req_table;
+  struct FAT32DriverRequest request = {
+      .buf = &req_table,
+      .ext = "\0\0\0",
+      .parent_cluster_number = parent_cluster,
+      .buffer_size = 0,
+  };
+  for (int i = 0; i < 8; i++) {
+    request.name[i] = name[i];
+  }
+
+  int8_t retcode;
+  syscall_user(1, (uint32_t)&request, (uint32_t)&retcode, 0);
+
+  if (retcode != 0) {
+    syscall_user(5, (uint32_t) "SHELL ERROR\n", 6, DARK_GREEN);
+  }
+
+  request.parent_cluster_number = dest_cluster;
+  syscall_user(2, (uint32_t)&request, (uint32_t)&retcode, 0);
+
+  if (retcode != 0) {
+    syscall_user(5, (uint32_t) "cp : Fail to copy folder\n", 50, DARK_GREEN);
+    return;
+  }
+
+  struct FAT32DirectoryTable new_table;
+  request.buf = &new_table;
+  syscall_user(1, (uint32_t)&request, (uint32_t)&retcode, 0);
+
+  for (uint32_t i = 1; i < CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry);
+       i++) {
+    if (req_table.table[i].user_attribute == UATTR_NOT_EMPTY) {
+      char curr_name[9];
+      for (int j = 0; j < 8; j++) {
+        curr_name[j] = req_table.table[i].name[j];
+      }
+      curr_name[8] = '\0';
+
+      uint32_t curr_cluster = req_table.table[0].cluster_high << 16 | req_table.table[0].cluster_low;
+      uint32_t new_dest = new_table.table[0].cluster_high << 16 | new_table.table[0].cluster_low;
+
+      if (req_table.table[i].attribute != ATTR_ARCHIVE) {
+        copy_folder(curr_name, curr_cluster, new_dest);
+      } else {
+        char curr_ext[4];
+        for (int j = 0; j < 3; j++) {
+          curr_ext[j] = req_table.table[i].ext[j];
+        }
+        curr_ext[3] = '\0';
+
+        copy_file(curr_name, curr_ext, req_table.table[i].filesize, curr_cluster, new_dest);
+      }
+    }
+  }
+}
+
 
 void clear_screen() {
   syscall_user(7, 0, 0, 0);
@@ -877,6 +935,11 @@ void execute_cmd(char* input, char* home) {
       char file_ext[4];
       parse_file_cmd(full_name, file_name, file_ext);
 
+      uint8_t isFolder = 0;
+      if(file_ext[0] == '\0') {
+        isFolder = 1;
+      }
+
       struct FAT32DirectoryTable parent_table;
       struct FAT32DriverRequest request = {
           .buf = &parent_table,
@@ -902,20 +965,22 @@ void execute_cmd(char* input, char* home) {
       }
 
       uint32_t filesize;
+      if(isFolder == 1) {
+        for (uint32_t i = 1;
+            i < CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry); i++) {
+          char curr_name[9];
+          for (int j = 0; j < 8; j++) {
+            curr_name[j] = parent_table.table[i].name[j];
+          }
+          curr_name[8] = '\0';
 
-      for (uint32_t i = 1;
-           i < CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry); i++) {
-        char curr_name[9];
-        for (int j = 0; j < 8; j++) {
-          curr_name[j] = parent_table.table[i].name[j];
-        }
-        curr_name[8] = '\0';
-
-        if (strcmp(curr_name, file_name) == 0) {
-          filesize = parent_table.table[i].filesize;
-          break;
+          if (strcmp(curr_name, file_name) == 0) {
+            filesize = parent_table.table[i].filesize;
+            break;
+          }
         }
       }
+
 
       uint32_t parent_cluster = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 1];
 
@@ -971,7 +1036,11 @@ void execute_cmd(char* input, char* home) {
 
       uint32_t dest_cluster = DIR_NUMBER_STACK[DIR_STACK_LENGTH - 1];
 
-      copy_file(file_name, file_ext, filesize, parent_cluster, dest_cluster);
+      if (isFolder == 0) {
+        copy_file(file_name, file_ext, filesize, parent_cluster, dest_cluster);
+      } else if (isFolder == 1) {
+        copy_folder(file_name, parent_cluster, dest_cluster);
+      }
 
       // MV
       // move file to new directory
